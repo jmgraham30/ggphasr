@@ -33,6 +33,31 @@
 
 
 # ---------------------------------------------------------------------------
+# .get_param()
+# ---------------------------------------------------------------------------
+#
+# Safely extracts a single parameter value from a `parameters` vector by
+# name (if the vector is named) or by position (if unnamed).
+#
+# Background: using `parameters[["name"]]` on an *unnamed* vector throws a
+# subscriptOutOfBoundsError in R rather than returning NULL, so we must
+# check for names first.
+#
+# @param parameters  A named or unnamed numeric vector or list.
+# @param name        Character string: the parameter name to look up.
+# @param pos         Integer: the positional fallback index (1-based).
+# @return            A scalar numeric value.
+#
+.get_param <- function(parameters, name, pos) {
+  if (!is.null(names(parameters))) {
+    parameters[[name]]
+  } else {
+    parameters[[pos]]
+  }
+}
+
+
+# ---------------------------------------------------------------------------
 # .detect_ode_convention()
 # ---------------------------------------------------------------------------
 #
