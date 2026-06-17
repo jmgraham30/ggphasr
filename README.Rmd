@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # ggphasr
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/jmgraham30/ggphasr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jmgraham30/ggphasr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of ggphasr is to ...
