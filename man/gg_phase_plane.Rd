@@ -32,7 +32,7 @@ gg_phase_plane(
 }
 \arguments{
 \item{deriv}{A function describing the ODE system, in Convention A or B.
-See \link{ggphasr} for details.}
+See \link{ggphasr-package} for details.}
 
 \item{xlim}{Numeric vector of length 2. x-axis range. Required.}
 
@@ -122,26 +122,6 @@ result$equilibria  # data frame of classified equilibria
 The \verb{$plot} component is a standard \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object and can
 be further customized with \code{+}.
 }
-\section{Flow field arguments}{
-
-}
-
-\section{Nullcline arguments}{
-
-}
-
-\section{Trajectory arguments}{
-
-}
-
-\section{Equilibrium arguments}{
-
-}
-
-\section{Label and theme arguments}{
-
-}
-
 \examples{
 # Minimal call: produces everything automatically
 result <- gg_phase_plane(

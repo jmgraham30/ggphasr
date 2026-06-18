@@ -30,7 +30,7 @@ gg_flow_field(
 \item{deriv}{A function (or named list of functions) describing the ODE
 system, in either Convention A (\code{f(t, y, parameters)} returning
 \code{list(c(...))}) or Convention B (simplified \code{f(x, y, parameters)}
-returning \code{c(...)}). See \link{ggphasr} for details on ODE conventions.
+returning \code{c(...)}). See \link{ggphasr-package} for details on ODE conventions.
 
 To overlay multiple systems, pass a named list:
 \code{deriv = list(system1 = f1, system2 = f2)}.}
@@ -111,8 +111,8 @@ list to the \code{deriv} argument (see Details and Examples).
 \subsection{ODE conventions}{
 
 Both phaseR-style (Convention A) and simplified (Convention B) ODE
-functions are accepted. The convention is detected automatically via
-\code{\link[ggphasr:::.detect_ode_convention]{ggphasr::::.detect_ode_convention()}}.
+functions are accepted. The calling convention is detected automatically
+from the function's argument names.
 }
 
 \subsection{Multiple systems}{
@@ -154,6 +154,7 @@ gg_flow_field(
   ode_van_der_pol,
   xlim                = c(-3, 3),
   ylim                = c(-3, 3),
+  parameters          = c(mu = 1),
   arrow_type          = "proportional",
   color_by_magnitude  = TRUE
 )

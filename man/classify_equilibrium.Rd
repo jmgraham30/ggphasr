@@ -40,10 +40,10 @@ A \code{\link[=data.frame]{data.frame()}} with one row and the following columns
 or \code{"Stable"}, \code{"Unstable"}, \code{"Inconclusive (df/dy = 0)"} (1D).}
 \item{\code{tr}}{Trace of the Jacobian (2D only; \code{NA} for 1D).}
 \item{\code{det}}{Determinant of the Jacobian (2D only; \code{NA} for 1D).}
-\item{\code{jacobian_11}}{J\link{1,1} — always present.}
-\item{\code{jacobian_12}}{J\link{1,2} (2D only; \code{NA} for 1D).}
-\item{\code{jacobian_21}}{J\link{2,1} (2D only; \code{NA} for 1D).}
-\item{\code{jacobian_22}}{J\link{2,2} (2D only; \code{NA} for 1D).}
+\item{\code{jacobian_11}}{\code{J[1,1]} — always present.}
+\item{\code{jacobian_12}}{\code{J[1,2]} (2D only; \code{NA} for 1D).}
+\item{\code{jacobian_21}}{\code{J[2,1]} (2D only; \code{NA} for 1D).}
+\item{\code{jacobian_22}}{\code{J[2,2]} (2D only; \code{NA} for 1D).}
 \item{\code{lambda_1_re}}{Real part of eigenvalue 1 (2D only; \code{NA} for 1D).}
 \item{\code{lambda_1_im}}{Imaginary part of eigenvalue 1 (2D only).}
 \item{\code{lambda_2_re}}{Real part of eigenvalue 2 (2D only).}

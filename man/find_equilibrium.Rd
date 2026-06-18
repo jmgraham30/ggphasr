@@ -18,7 +18,7 @@ find_equilibrium(
 }
 \arguments{
 \item{deriv}{A function describing the ODE system, in Convention A or B.
-See \link{ggphasr} for details.}
+See \link{ggphasr-package} for details.}
 
 \item{y0}{Initial guess(es) for the root-finder. One of:
 \itemize{
