@@ -9,59 +9,63 @@ gg_phase_portrait(
   ylim,
   xlim = c(0, 1),
   parameters = NULL,
-  line_position = 0,
+  line_x_position = NULL,
   n_arrows = 15L,
   n_search = 500L,
-  arrow_color = "grey40",
+  arrow_color = "grey30",
   arrow_size = 0.4,
+  arrow_length_scale = 0.7,
   stable_color = "black",
-  unstable_color = "white",
+  unstable_fill = "white",
   eq_size = 4,
   eq_stroke = 1,
-  line_color = "grey40",
+  line_color = "grey30",
   line_linewidth = 0.6
 )
 }
 \arguments{
 \item{deriv}{A function describing the 1D ODE system, in Convention A
-(\code{f(t, y, parameters)}) or Convention B (\code{f(y, parameters)}).}
+or B. See \link{ggphasr} for details.}
 
 \item{ylim}{Numeric vector of length 2. Range of the y-axis (state
 variable). Should match the \code{ylim} of the parent plot.}
 
-\item{xlim}{Numeric vector of length 2. Range of the x-axis. Used to
-determine arrow placement. Should match the \code{xlim} of the parent
-plot. Default: \code{c(0, 1)}.}
+\item{xlim}{Numeric vector of length 2. Range of the x-axis. Should
+match the \code{xlim} of the parent plot. Default: \code{c(0, 1)}.}
 
 \item{parameters}{Parameter vector or list passed to \code{deriv}.}
 
-\item{line_position}{Numeric. y-coordinate at which to draw the phase
-line. Default: \code{0} (on the x-axis).}
+\item{line_x_position}{Numeric or \code{NULL}. x-coordinate at which the
+vertical phase line is drawn. If \code{NULL} (default), placed at the
+left edge: \code{xlim[1] + 0.04 * diff(xlim)}.}
 
 \item{n_arrows}{Integer. Number of directional arrows along the phase
 line. Default: \code{15}.}
 
 \item{n_search}{Integer. Grid resolution for equilibrium detection.
-Default: \code{500}. Increase if equilibria are missed.}
+Default: \code{500}.}
 
 \item{arrow_color}{Character. Color of the directional arrows.
-Default: \code{"grey40"}.}
+Default: \code{"grey30"}.}
 
 \item{arrow_size}{Numeric. Size of arrow heads in lines. Default: \code{0.4}.}
 
-\item{stable_color}{Character. Fill color for stable equilibrium points.
+\item{arrow_length_scale}{Numeric in (0, 1]. Arrow length as a fraction
+of the y-range divided by \code{n_arrows}. Default: \code{0.7}.}
+
+\item{stable_color}{Character. Fill color for stable equilibria.
 Default: \code{"black"}.}
 
-\item{unstable_color}{Character. Fill color for unstable equilibrium
-points. Default: \code{"white"}.}
+\item{unstable_fill}{Character. Fill color for unstable equilibria.
+Default: \code{"white"}.}
 
 \item{eq_size}{Numeric. Size of equilibrium points. Default: \code{4}.}
 
 \item{eq_stroke}{Numeric. Border width of equilibrium points.
 Default: \code{1}.}
 
-\item{line_color}{Character. Color of the phase line itself.
-Default: \code{"grey40"}.}
+\item{line_color}{Character. Color of the vertical phase line.
+Default: \code{"grey30"}.}
 
 \item{line_linewidth}{Numeric. Width of the phase line. Default: \code{0.6}.}
 }
@@ -70,51 +74,41 @@ A list of \link[ggplot2:ggplot2]{ggplot2} layer objects. Add to a ggplot with \c
 }
 \description{
 Computes and adds a one-dimensional phase line to an existing
-\code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object. The phase line consists of:
+\code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object. The phase line is drawn as a \strong{vertical
+line at the left or right edge} of the plot (controlled by
+\code{line_x_position}), cleanly separated from the flow field arrows in the
+plot interior. It consists of:
 \itemize{
-\item A horizontal reference line at \code{line_position} on the y-axis
-\item Directional arrows along the line showing the sign of \eqn{dy/dt}
+\item A vertical reference line at \code{line_x_position}
+\item Upward/downward arrows showing the sign of \eqn{dy/dt}
 \item Filled circles at stable (attracting) equilibria
 \item Open circles at unstable (repelling) equilibria
-\item Half-filled circles at semi-stable equilibria
+\item Diamond symbols at semi-stable equilibria
 }
-}
-\details{
-Designed to be added to a \code{\link[=gg_flow_field]{gg_flow_field()}} call with
-\code{system = "one.dim"}:
-
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{gg_flow_field(my_ode, xlim = c(0, 5), ylim = c(-1, 12),
-              system = "one.dim") +
-  gg_phase_portrait(my_ode, ylim = c(-1, 12))
-}\if{html}{\out{</div>}}
 }
 \examples{
-# Logistic growth: stable equilibrium at K=10, unstable at 0
+# Logistic growth: stable equilibrium at K = 10, unstable at y = 0
 gg_flow_field(
   ode_logistic,
-  xlim       = c(0, 6),
-  ylim       = c(-1, 12),
-  system     = "one.dim",
-  parameters = c(r = 1, K = 10)
+  xlim = c(0, 6), ylim = c(-1, 12),
+  system = "one.dim", parameters = c(r = 1, K = 10)
 ) +
   gg_phase_portrait(
     ode_logistic,
-    ylim       = c(-1, 12),
-    xlim       = c(0, 6),
+    ylim = c(-1, 12), xlim = c(0, 6),
     parameters = c(r = 1, K = 10)
   )
 
-# Example 01: dy/dt = 4 - y^2, equilibria at y = +-2
+# Place phase line on the right edge instead
 gg_flow_field(
   ode_example_01,
-  xlim   = c(0, 4),
-  ylim   = c(-4, 4),
+  xlim = c(0, 4), ylim = c(-4, 4),
   system = "one.dim"
 ) +
   gg_phase_portrait(
     ode_example_01,
-    ylim = c(-4, 4),
-    xlim = c(0, 4)
+    ylim = c(-4, 4), xlim = c(0, 4),
+    line_x_position = 3.85
   )
 
 }
