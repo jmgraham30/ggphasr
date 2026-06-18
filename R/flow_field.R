@@ -157,7 +157,7 @@
 #' @param deriv A function (or named list of functions) describing the ODE
 #'   system, in either Convention A (`f(t, y, parameters)` returning
 #'   `list(c(...))`) or Convention B (simplified `f(x, y, parameters)`
-#'   returning `c(...)`). See [ggphasr] for details on ODE conventions.
+#'   returning `c(...)`). See [ggphasr-package] for details on ODE conventions.
 #'
 #'   To overlay multiple systems, pass a named list:
 #'   `deriv = list(system1 = f1, system2 = f2)`.
@@ -211,8 +211,8 @@
 #' @details
 #' ## ODE conventions
 #' Both phaseR-style (Convention A) and simplified (Convention B) ODE
-#' functions are accepted. The convention is detected automatically via
-#' [ggphasr:::.detect_ode_convention()].
+#' functions are accepted. The calling convention is detected automatically
+#' from the function's argument names.
 #'
 #' ## Multiple systems
 #' When `deriv` is a named list, each system is drawn with a different color
@@ -249,6 +249,7 @@
 #'   ode_van_der_pol,
 #'   xlim                = c(-3, 3),
 #'   ylim                = c(-3, 3),
+#'   parameters          = c(mu = 1),
 #'   arrow_type          = "proportional",
 #'   color_by_magnitude  = TRUE
 #' )

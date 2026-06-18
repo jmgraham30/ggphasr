@@ -59,7 +59,7 @@
 #' @seealso [ode_logistic()], [ode_monomolecular()]
 #' @export
 ode_exponential <- function(t, y, parameters = c(r = 0.5)) {
-  r <- ggphasr:::.get_param(parameters, "r", 1L)
+  r <- .get_param(parameters, "r", 1L)
   list(c(r * y[[1L]]))
 }
 
@@ -107,8 +107,8 @@ ode_exponential <- function(t, y, parameters = c(r = 0.5)) {
 #' @seealso [ode_exponential()], [ode_monomolecular()]
 #' @export
 ode_logistic <- function(t, y, parameters = c(r = 1, K = 10)) {
-  r <- ggphasr:::.get_param(parameters, "r", 1L)
-  K <- ggphasr:::.get_param(parameters, "K", 2L)
+  r <- .get_param(parameters, "r", 1L)
+  K <- .get_param(parameters, "K", 2L)
   list(c(r * y[[1L]] * (1 - y[[1L]] / K)))
 }
 
@@ -158,8 +158,8 @@ ode_logistic <- function(t, y, parameters = c(r = 1, K = 10)) {
 #' @seealso [ode_logistic()], [ode_von_bertalanffy()]
 #' @export
 ode_monomolecular <- function(t, y, parameters = c(r = 1, K = 10)) {
-  r <- ggphasr:::.get_param(parameters, "r", 1L)
-  K <- ggphasr:::.get_param(parameters, "K", 2L)
+  r <- .get_param(parameters, "r", 1L)
+  K <- .get_param(parameters, "K", 2L)
   list(c(r * (K - y[[1L]])))
 }
 
@@ -214,7 +214,7 @@ ode_monomolecular <- function(t, y, parameters = c(r = 1, K = 10)) {
 #' @seealso [ode_monomolecular()], [ode_logistic()]
 #' @export
 ode_von_bertalanffy <- function(t, y, parameters = c(alpha = 1, beta = 0.5)) {
-  alpha <- ggphasr:::.get_param(parameters, "alpha", 1L)
-  beta  <- ggphasr:::.get_param(parameters, "beta",  2L)
+  alpha <- .get_param(parameters, "alpha", 1L)
+  beta  <- .get_param(parameters, "beta",  2L)
   list(c(alpha * y[[1L]]^(2/3) - beta * y[[1L]]))
 }

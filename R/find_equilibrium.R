@@ -166,7 +166,7 @@
 #' grid of starting points to search for multiple equilibria.
 #'
 #' @param deriv A function describing the ODE system, in Convention A or B.
-#'   See [ggphasr] for details.
+#'   See [ggphasr-package] for details.
 #' @param y0 Initial guess(es) for the root-finder. One of:
 #'   \itemize{
 #'     \item A numeric vector of length 1 (1D) or 2 (2D): a single starting
@@ -359,10 +359,10 @@ find_equilibrium <- function(deriv,
 #'       or `"Stable"`, `"Unstable"`, `"Inconclusive (df/dy = 0)"` (1D).}
 #'     \item{`tr`}{Trace of the Jacobian (2D only; `NA` for 1D).}
 #'     \item{`det`}{Determinant of the Jacobian (2D only; `NA` for 1D).}
-#'     \item{`jacobian_11`}{J[1,1] — always present.}
-#'     \item{`jacobian_12`}{J[1,2] (2D only; `NA` for 1D).}
-#'     \item{`jacobian_21`}{J[2,1] (2D only; `NA` for 1D).}
-#'     \item{`jacobian_22`}{J[2,2] (2D only; `NA` for 1D).}
+#'     \item{`jacobian_11`}{`J[1,1]` — always present.}
+#'     \item{`jacobian_12`}{`J[1,2]` (2D only; `NA` for 1D).}
+#'     \item{`jacobian_21`}{`J[2,1]` (2D only; `NA` for 1D).}
+#'     \item{`jacobian_22`}{`J[2,2]` (2D only; `NA` for 1D).}
 #'     \item{`lambda_1_re`}{Real part of eigenvalue 1 (2D only; `NA` for 1D).}
 #'     \item{`lambda_1_im`}{Imaginary part of eigenvalue 1 (2D only).}
 #'     \item{`lambda_2_re`}{Real part of eigenvalue 2 (2D only).}

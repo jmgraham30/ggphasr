@@ -117,24 +117,24 @@
 #' be further customized with `+`.
 #'
 #' @param deriv A function describing the ODE system, in Convention A or B.
-#'   See [ggphasr] for details.
+#'   See [ggphasr-package] for details.
 #' @param xlim Numeric vector of length 2. x-axis range. Required.
 #' @param ylim Numeric vector of length 2. y-axis range. Required.
 #' @param system Character: `"two.dim"` (default) or `"one.dim"`.
 #' @param parameters Parameter vector or list passed to `deriv`.
 #'
-#' @section Flow field arguments:
+#'
 #' @param n_points Integer. Flow field grid resolution. Default: `21`.
 #' @param arrow_type Character: `"equal"` (default) or `"proportional"`.
 #' @param arrow_color Character. Flow field arrow color. Default: `"grey70"`.
 #'
-#' @section Nullcline arguments:
+#'
 #' @param show_nullclines Logical. Whether to draw nullclines.
 #'   Default: `TRUE`.
 #' @param nullcline_n_points Integer. Nullcline grid resolution.
 #'   Default: `250`.
 #'
-#' @section Trajectory arguments:
+#'
 #' @param y0 Initial condition(s) for trajectories. A numeric vector,
 #'   matrix, or list as accepted by [ggphasr::gg_trajectory()]. If `NULL`
 #'   (default), a regular grid of `n_ic x n_ic` initial conditions is
@@ -151,7 +151,7 @@
 #'   multiple ICs are used, each trajectory gets a distinct color. If a
 #'   color string, all trajectories share that color.
 #'
-#' @section Equilibrium arguments:
+#'
 #' @param find_equilibria Logical. Whether to automatically find, classify,
 #'   and annotate equilibria. Default: `TRUE`. Uses a grid search over
 #'   `xlim` x `ylim`.
@@ -162,7 +162,7 @@
 #' @param show_eq_legend Logical. Whether to show a legend for equilibrium
 #'   types. Default: `TRUE`.
 #'
-#' @section Label and theme arguments:
+#'
 #' @param xlab Character. x-axis label. Default: `"x"` (2D) or `"t"` (1D).
 #' @param ylab Character. y-axis label. Default: `"y"`.
 #' @param title Character or `NULL`. Plot title. Default: `NULL`.
