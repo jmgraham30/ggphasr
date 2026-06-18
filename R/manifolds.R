@@ -22,32 +22,14 @@
 # ---------------------------------------------------------------------------
 # .get_manifold_eigenvectors()
 # ---------------------------------------------------------------------------
-#
-# Extracts the stable eigenvector (corresponding to the eigenvalue with
-# negative real part) and the unstable eigenvector (positive real part)
-# from the Jacobian at an equilibrium point.
-#
-# Accepts either a pre-computed classify_equilibrium() data frame or
-# computes the Jacobian internally via finite differences.
-#
-# @param deriv          Normalized (Convention A) ODE function.
-# @param equilibrium    Numeric vector of length 2: saddle coordinates.
-# @param parameters     Parameter vector/list.
-# @param eq_classified  Data frame from classify_equilibrium(), or NULL.
-# @param h              Finite-difference step size. Default: 1e-6.
-# @return A named list:
-#   $stable_vec   — unit eigenvector for the stable direction (length 2)
-#   $unstable_vec — unit eigenvector for the unstable direction (length 2)
-#   $lambda_s     — stable eigenvalue (negative real part)
-#   $lambda_u     — unstable eigenvalue (positive real part)
-#
+
+#' @keywords internal
 .get_manifold_eigenvectors <- function(deriv,
                                         equilibrium,
                                         parameters,
                                         eq_classified = NULL,
                                         h             = 1e-6) {
 
-  # Compute Jacobian — either from scratch or use pre-computed result
   if (!is.null(eq_classified)) {
     J <- matrix(
       c(eq_classified$jacobian_11, eq_classified$jacobian_21,
@@ -62,16 +44,13 @@
   vals <- eig$values
   vecs <- eig$vectors
 
-  # Identify stable (lambda < 0) and unstable (lambda > 0) indices
-  # Use real parts since eigenvalues may be complex (non-saddle case)
-  re_vals  <- Re(vals)
-  idx_s    <- which.min(re_vals)   # most negative -> stable direction
-  idx_u    <- which.max(re_vals)   # most positive -> unstable direction
+  re_vals <- Re(vals)
+  idx_s   <- which.min(re_vals)
+  idx_u   <- which.max(re_vals)
 
-  lambda_s  <- vals[[idx_s]]
-  lambda_u  <- vals[[idx_u]]
+  lambda_s <- vals[[idx_s]]
+  lambda_u <- vals[[idx_u]]
 
-  # Extract and normalize eigenvectors (take real parts for real saddles)
   vec_s <- Re(vecs[, idx_s])
   vec_u <- Re(vecs[, idx_u])
   vec_s <- vec_s / sqrt(sum(vec_s^2))
@@ -90,24 +69,8 @@
 # ---------------------------------------------------------------------------
 # .integrate_manifold_branch()
 # ---------------------------------------------------------------------------
-#
-# Integrates one branch of a manifold from a seed point.
-#
-# For the unstable manifold: integrate FORWARD from
-#   seed = equilibrium + epsilon * eigenvector
-#
-# For the stable manifold: integrate BACKWARD from
-#   seed = equilibrium + epsilon * eigenvector
-# (i.e., t_end is negative)
-#
-# @param deriv       Normalized (Convention A) ODE function.
-# @param seed        Numeric vector of length 2: starting point.
-# @param t_end       Numeric: integration end time (negative for backward).
-# @param t_steps     Integer: number of output steps.
-# @param parameters  Parameter vector/list.
-# @param method      deSolve integration method.
-# @return A data frame with columns x, y, or NULL on failure.
-#
+
+#' @keywords internal
 .integrate_manifold_branch <- function(deriv,
                                         seed,
                                         t_end,
@@ -127,6 +90,53 @@
 
   if (is.null(result)) return(NULL)
   result[, c("x", "y")]
+}
+
+
+# ---------------------------------------------------------------------------
+# .build_manifold_data()
+# ---------------------------------------------------------------------------
+#
+# Integrates all branches of one manifold (stable or unstable) and returns
+# a single tidy data frame with atomic character columns branch and
+# manifold_type. Using a for-loop with explicit index avoids the
+# sapply(seeds, identical, seed) pattern which can produce list-type columns.
+#
+# @param norm          Normalized ODE function.
+# @param seeds         List of length-2 numeric seed vectors.
+# @param t_end         Numeric: integration end time (negative = backward).
+# @param t_steps       Integer: number of integration steps.
+# @param parameters    Parameter vector/list.
+# @param method        deSolve method string.
+# @param label         Character: "Stable manifold" or "Unstable manifold".
+# @param prefix        Character: single-letter branch prefix ("s" or "u").
+# @return A data frame with columns x, y, branch, manifold_type, or NULL.
+#
+.build_manifold_data <- function(norm, seeds, t_end, t_steps,
+                                  parameters, method, label, prefix) {
+
+  segs <- vector("list", length(seeds))
+
+  for (i in seq_along(seeds)) {
+    df <- .integrate_manifold_branch(norm, seeds[[i]], t_end,
+                                      t_steps, parameters, method)
+    if (!is.null(df)) {
+      df$branch        <- paste0(prefix, i)    # plain character: "s1", "s2"
+      df$manifold_type <- label                # plain character
+      segs[[i]]        <- df
+    }
+  }
+
+  segs <- Filter(Negate(is.null), segs)
+  if (length(segs) == 0L) return(NULL)
+
+  result <- do.call(rbind, segs)
+  # Explicitly coerce to atomic types to prevent list-column issues in ggplot2
+  result$branch        <- as.character(result$branch)
+  result$manifold_type <- as.character(result$manifold_type)
+  result$x             <- as.numeric(result$x)
+  result$y             <- as.numeric(result$y)
+  result
 }
 
 
@@ -164,17 +174,16 @@
 #' @param eq_classified A data frame returned by
 #'   [ggphasr::classify_equilibrium()], or `NULL` (default). When supplied,
 #'   the Jacobian is read from this object rather than recomputed.
-#' @param draw_stable Logical. Whether to draw the stable manifold
-#'   (trajectories approaching the saddle). Default: `TRUE`.
-#' @param draw_unstable Logical. Whether to draw the unstable manifold
-#'   (trajectories leaving the saddle). Default: `TRUE`.
+#' @param draw_stable Logical. Whether to draw the stable manifold.
+#'   Default: `TRUE`.
+#' @param draw_unstable Logical. Whether to draw the unstable manifold.
+#'   Default: `TRUE`.
 #' @param t_manifold Numeric. Integration time for each manifold branch.
-#'   Default: `10`. Increase for manifolds that curve far from the saddle.
+#'   Default: `10`.
 #' @param t_steps Integer. Number of integration steps per branch.
 #'   Default: `500`.
-#' @param epsilon Numeric. Distance from the saddle to the seed points
-#'   along each eigenvector. Default: `1e-4`. Decrease if the saddle is
-#'   near boundaries or other equilibria.
+#' @param epsilon Numeric. Distance from the saddle to the seed points.
+#'   Default: `1e-4`.
 #' @param method Character. deSolve integration method. Default: `"lsoda"`.
 #' @param stable_color Character. Color of the stable manifold.
 #'   Default: `"#4575b4"` (blue).
@@ -185,13 +194,13 @@
 #'   manifold. Default: `"dashed"`.
 #' @param unstable_linetype Character or integer. Line type for the unstable
 #'   manifold. Default: `"solid"`.
-#' @param add_arrows Logical. Whether to add direction arrows along the
-#'   manifold curves. Default: `TRUE`.
+#' @param add_arrows Logical. Whether to add direction arrows. Default: `TRUE`.
 #' @param arrow_size Numeric. Arrow head size in lines. Default: `0.35`.
-#' @param add_legend Logical. Whether to add a legend entry for each
-#'   manifold. Default: `TRUE`.
-#' @param h Numeric. Finite-difference step size for Jacobian computation
-#'   when `eq_classified = NULL`. Default: `1e-6`.
+#' @param add_legend Logical. Whether to add a legend. Default: `FALSE`.
+#'   Note: setting `TRUE` adds `scale_color_manual()` and
+#'   `scale_linetype_manual()` layers, which will conflict if the parent
+#'   plot already has color or linetype scales.
+#' @param h Numeric. Finite-difference step for Jacobian. Default: `1e-6`.
 #'
 #' @return A list of [ggplot2] layer objects. Add to a ggplot with `+`.
 #'   Returns an empty list (invisibly) with a warning if the equilibrium
@@ -203,30 +212,13 @@
 #'               xlim = c(-3, 3), ylim = c(-3, 3)) +
 #'   gg_manifolds(ode_example_08, equilibrium = c(0, 0))
 #'
-#' # Using pre-computed classify_equilibrium() output
-#' eq_cl <- classify_equilibrium(ode_example_08, equilibrium = c(0, 0))
-#' gg_flow_field(ode_example_08,
-#'               xlim = c(-3, 3), ylim = c(-3, 3)) +
-#'   gg_manifolds(ode_example_08,
-#'                equilibrium   = c(0, 0),
-#'                eq_classified = eq_cl)
-#'
-#' # Draw only the unstable manifold
-#' gg_flow_field(ode_example_08,
-#'               xlim = c(-3, 3), ylim = c(-3, 3)) +
-#'   gg_manifolds(ode_example_08,
-#'                equilibrium   = c(0, 0),
-#'                draw_stable   = FALSE,
-#'                draw_unstable = TRUE)
-#'
 #' # Full workflow: find, classify, then draw manifolds
-#' eq      <- find_equilibrium(ode_example_11, y0 = c(0.8, 0.8))
-#' eq_cl   <- classify_equilibrium(ode_example_11, equilibrium = eq[[1L]])
+#' eq    <- find_equilibrium(ode_example_11, y0 = c(0.8, 0.8))
+#' eq_cl <- classify_equilibrium(ode_example_11, equilibrium = eq[[1L]])
 #'
 #' gg_flow_field(ode_example_11,
 #'               xlim = c(0, 4), ylim = c(0, 3)) +
-#'   gg_nullclines(ode_example_11,
-#'                 xlim = c(0, 4), ylim = c(0, 3)) +
+#'   gg_nullclines(ode_example_11, xlim = c(0, 4), ylim = c(0, 3)) +
 #'   gg_manifolds(ode_example_11,
 #'                equilibrium   = eq[[1L]],
 #'                eq_classified = eq_cl,
@@ -237,23 +229,23 @@
 #' @export
 gg_manifolds <- function(deriv,
                           equilibrium,
-                          parameters       = NULL,
-                          eq_classified    = NULL,
-                          draw_stable      = TRUE,
-                          draw_unstable    = TRUE,
-                          t_manifold       = 10,
-                          t_steps          = 500L,
-                          epsilon          = 1e-4,
-                          method           = "lsoda",
-                          stable_color     = "#4575b4",
-                          unstable_color   = "#d73027",
-                          linewidth        = 1,
-                          stable_linetype  = "dashed",
+                          parameters        = NULL,
+                          eq_classified     = NULL,
+                          draw_stable       = TRUE,
+                          draw_unstable     = TRUE,
+                          t_manifold        = 10,
+                          t_steps           = 500L,
+                          epsilon           = 1e-4,
+                          method            = "lsoda",
+                          stable_color      = "#4575b4",
+                          unstable_color    = "#d73027",
+                          linewidth         = 1,
+                          stable_linetype   = "dashed",
                           unstable_linetype = "solid",
-                          add_arrows       = TRUE,
-                          arrow_size       = 0.35,
-                          add_legend       = TRUE,
-                          h                = 1e-6) {
+                          add_arrows        = TRUE,
+                          arrow_size        = 0.35,
+                          add_legend        = FALSE,
+                          h                 = 1e-6) {
 
   # ── Input validation ─────────────────────────────────────────────────────
   equilibrium <- as.numeric(equilibrium)
@@ -306,8 +298,7 @@ gg_manifolds <- function(deriv,
     }
   )
 
-  # ── Check that the equilibrium is actually a saddle ───────────────────────
-  # (when eq_classified is NULL we must check here)
+  # ── Check that the equilibrium is actually a saddle (no eq_classified) ───
   if (is.null(eq_classified)) {
     re_s <- Re(eig_info$lambda_s)
     re_u <- Re(eig_info$lambda_u)
@@ -329,13 +320,12 @@ gg_manifolds <- function(deriv,
   vec_s <- eig_info$stable_vec
   vec_u <- eig_info$unstable_vec
 
-  # Four seeds: +/- epsilon along each eigenvector
   seeds_stable   <- list(equilibrium + epsilon * vec_s,
                           equilibrium - epsilon * vec_s)
   seeds_unstable <- list(equilibrium + epsilon * vec_u,
                           equilibrium - epsilon * vec_u)
 
-  # ── Integrate manifold branches ───────────────────────────────────────────
+  # ── Arrow spec ────────────────────────────────────────────────────────────
   arrow_spec <- if (add_arrows) {
     grid::arrow(length = grid::unit(arrow_size, "lines"),
                 type   = "open", ends = "last")
@@ -343,31 +333,22 @@ gg_manifolds <- function(deriv,
 
   layers <- list()
 
-  # ── Stable manifold (backward integration from stable seeds) ─────────────
+  # ── Stable manifold ───────────────────────────────────────────────────────
   if (draw_stable) {
+    stable_data <- .build_manifold_data(
+      norm, seeds_stable, -t_manifold, t_steps,
+      parameters, method, "Stable manifold", "s"
+    )
 
-    stable_segs <- lapply(seeds_stable, function(seed) {
-      df <- .integrate_manifold_branch(norm, seed, -t_manifold,
-                                        t_steps, parameters, method)
-      if (is.null(df)) return(NULL)
-      df$branch <- paste0("seed_", which(sapply(seeds_stable,
-                                                  identical, seed)))
-      df
-    })
-    stable_segs <- Filter(Negate(is.null), stable_segs)
-
-    if (length(stable_segs) > 0L) {
-      stable_data          <- do.call(rbind, stable_segs)
-      stable_data$manifold <- "Stable manifold"
-
+    if (!is.null(stable_data)) {
       if (add_legend) {
         layers[[length(layers) + 1L]] <- ggplot2::geom_path(
           data    = stable_data,
           mapping = ggplot2::aes(x        = .data$x,
                                  y        = .data$y,
                                  group    = .data$branch,
-                                 color    = .data$manifold,
-                                 linetype = .data$manifold),
+                                 color    = .data$manifold_type,
+                                 linetype = .data$manifold_type),
           linewidth = linewidth,
           arrow     = arrow_spec,
           na.rm     = TRUE,
@@ -390,31 +371,22 @@ gg_manifolds <- function(deriv,
     }
   }
 
-  # ── Unstable manifold (forward integration from unstable seeds) ───────────
+  # ── Unstable manifold ─────────────────────────────────────────────────────
   if (draw_unstable) {
+    unstable_data <- .build_manifold_data(
+      norm, seeds_unstable, t_manifold, t_steps,
+      parameters, method, "Unstable manifold", "u"
+    )
 
-    unstable_segs <- lapply(seeds_unstable, function(seed) {
-      df <- .integrate_manifold_branch(norm, seed, t_manifold,
-                                        t_steps, parameters, method)
-      if (is.null(df)) return(NULL)
-      df$branch <- paste0("seed_", which(sapply(seeds_unstable,
-                                                  identical, seed)))
-      df
-    })
-    unstable_segs <- Filter(Negate(is.null), unstable_segs)
-
-    if (length(unstable_segs) > 0L) {
-      unstable_data          <- do.call(rbind, unstable_segs)
-      unstable_data$manifold <- "Unstable manifold"
-
+    if (!is.null(unstable_data)) {
       if (add_legend) {
         layers[[length(layers) + 1L]] <- ggplot2::geom_path(
           data    = unstable_data,
           mapping = ggplot2::aes(x        = .data$x,
                                  y        = .data$y,
                                  group    = .data$branch,
-                                 color    = .data$manifold,
-                                 linetype = .data$manifold),
+                                 color    = .data$manifold_type,
+                                 linetype = .data$manifold_type),
           linewidth = linewidth,
           arrow     = arrow_spec,
           na.rm     = TRUE,
@@ -437,13 +409,10 @@ gg_manifolds <- function(deriv,
     }
   }
 
-  # ── Color and linetype scales (legend) ───────────────────────────────────
+  # ── Color and linetype scales (legend path only) ──────────────────────────
   if (add_legend && length(layers) > 0L) {
-
-    # Build named vectors only for what was requested
     color_vals    <- c()
     linetype_vals <- c()
-
     if (draw_stable) {
       color_vals[["Stable manifold"]]    <- stable_color
       linetype_vals[["Stable manifold"]] <- stable_linetype
@@ -452,14 +421,11 @@ gg_manifolds <- function(deriv,
       color_vals[["Unstable manifold"]]    <- unstable_color
       linetype_vals[["Unstable manifold"]] <- unstable_linetype
     }
-
     layers[[length(layers) + 1L]] <- ggplot2::scale_color_manual(
-      name   = NULL,
-      values = color_vals
+      name = NULL, values = color_vals
     )
     layers[[length(layers) + 1L]] <- ggplot2::scale_linetype_manual(
-      name   = NULL,
-      values = linetype_vals
+      name = NULL, values = linetype_vals
     )
   }
 

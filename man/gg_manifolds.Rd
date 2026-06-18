@@ -22,7 +22,7 @@ gg_manifolds(
   unstable_linetype = "solid",
   add_arrows = TRUE,
   arrow_size = 0.35,
-  add_legend = TRUE,
+  add_legend = FALSE,
   h = 1e-06
 )
 }
@@ -39,21 +39,20 @@ coordinates. Typically obtained from \code{\link[=find_equilibrium]{find_equilib
 \code{\link[=classify_equilibrium]{classify_equilibrium()}}, or \code{NULL} (default). When supplied,
 the Jacobian is read from this object rather than recomputed.}
 
-\item{draw_stable}{Logical. Whether to draw the stable manifold
-(trajectories approaching the saddle). Default: \code{TRUE}.}
+\item{draw_stable}{Logical. Whether to draw the stable manifold.
+Default: \code{TRUE}.}
 
-\item{draw_unstable}{Logical. Whether to draw the unstable manifold
-(trajectories leaving the saddle). Default: \code{TRUE}.}
+\item{draw_unstable}{Logical. Whether to draw the unstable manifold.
+Default: \code{TRUE}.}
 
 \item{t_manifold}{Numeric. Integration time for each manifold branch.
-Default: \code{10}. Increase for manifolds that curve far from the saddle.}
+Default: \code{10}.}
 
 \item{t_steps}{Integer. Number of integration steps per branch.
 Default: \code{500}.}
 
-\item{epsilon}{Numeric. Distance from the saddle to the seed points
-along each eigenvector. Default: \code{1e-4}. Decrease if the saddle is
-near boundaries or other equilibria.}
+\item{epsilon}{Numeric. Distance from the saddle to the seed points.
+Default: \code{1e-4}.}
 
 \item{method}{Character. deSolve integration method. Default: \code{"lsoda"}.}
 
@@ -71,16 +70,16 @@ manifold. Default: \code{"dashed"}.}
 \item{unstable_linetype}{Character or integer. Line type for the unstable
 manifold. Default: \code{"solid"}.}
 
-\item{add_arrows}{Logical. Whether to add direction arrows along the
-manifold curves. Default: \code{TRUE}.}
+\item{add_arrows}{Logical. Whether to add direction arrows. Default: \code{TRUE}.}
 
 \item{arrow_size}{Numeric. Arrow head size in lines. Default: \code{0.35}.}
 
-\item{add_legend}{Logical. Whether to add a legend entry for each
-manifold. Default: \code{TRUE}.}
+\item{add_legend}{Logical. Whether to add a legend. Default: \code{FALSE}.
+Note: setting \code{TRUE} adds \code{scale_color_manual()} and
+\code{scale_linetype_manual()} layers, which will conflict if the parent
+plot already has color or linetype scales.}
 
-\item{h}{Numeric. Finite-difference step size for Jacobian computation
-when \code{eq_classified = NULL}. Default: \code{1e-6}.}
+\item{h}{Numeric. Finite-difference step for Jacobian. Default: \code{1e-6}.}
 }
 \value{
 A list of \link[ggplot2:ggplot2]{ggplot2} layer objects. Add to a ggplot with \code{+}.
@@ -115,30 +114,13 @@ gg_flow_field(ode_example_08,
               xlim = c(-3, 3), ylim = c(-3, 3)) +
   gg_manifolds(ode_example_08, equilibrium = c(0, 0))
 
-# Using pre-computed classify_equilibrium() output
-eq_cl <- classify_equilibrium(ode_example_08, equilibrium = c(0, 0))
-gg_flow_field(ode_example_08,
-              xlim = c(-3, 3), ylim = c(-3, 3)) +
-  gg_manifolds(ode_example_08,
-               equilibrium   = c(0, 0),
-               eq_classified = eq_cl)
-
-# Draw only the unstable manifold
-gg_flow_field(ode_example_08,
-              xlim = c(-3, 3), ylim = c(-3, 3)) +
-  gg_manifolds(ode_example_08,
-               equilibrium   = c(0, 0),
-               draw_stable   = FALSE,
-               draw_unstable = TRUE)
-
 # Full workflow: find, classify, then draw manifolds
-eq      <- find_equilibrium(ode_example_11, y0 = c(0.8, 0.8))
-eq_cl   <- classify_equilibrium(ode_example_11, equilibrium = eq[[1L]])
+eq    <- find_equilibrium(ode_example_11, y0 = c(0.8, 0.8))
+eq_cl <- classify_equilibrium(ode_example_11, equilibrium = eq[[1L]])
 
 gg_flow_field(ode_example_11,
               xlim = c(0, 4), ylim = c(0, 3)) +
-  gg_nullclines(ode_example_11,
-                xlim = c(0, 4), ylim = c(0, 3)) +
+  gg_nullclines(ode_example_11, xlim = c(0, 4), ylim = c(0, 3)) +
   gg_manifolds(ode_example_11,
                equilibrium   = eq[[1L]],
                eq_classified = eq_cl,
