@@ -2,6 +2,8 @@
 
 export(gg_flow_field)
 export(gg_nullclines)
+export(gg_phase_portrait)
+export(gg_time_series)
 export(gg_trajectory)
 export(ode_competition)
 export(ode_example_01)
