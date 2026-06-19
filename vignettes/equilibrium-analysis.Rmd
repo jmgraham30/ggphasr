@@ -1,0 +1,563 @@
+---
+title: "Equilibrium Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Equilibrium Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 6,
+  fig.height = 5,
+  fig.align  = "center",
+  out.width  = "90%"
+)
+```
+
+## Introduction
+
+An **equilibrium point** (also called a fixed point or steady state) of
+an autonomous ODE system is a state $(x^*, y^*)$ where all derivatives
+vanish simultaneously:
+
+$$f(x^*, y^*) = 0, \qquad g(x^*, y^*) = 0.$$
+
+Knowing the location and **stability type** of each equilibrium is
+central to understanding the qualitative behavior of a system — it
+tells us where trajectories end up, how they approach or depart from
+rest states, and how the system responds to perturbations.
+
+This vignette covers:
+
+1. Finding equilibria numerically with `find_equilibrium()`
+2. The Jacobian matrix and linearization
+3. Classifying equilibria with `classify_equilibrium()`
+4. The trace-determinant plane
+5. Drawing stable and unstable manifolds with `gg_manifolds()`
+6. A complete worked example: the nonlinear competition model
+7. Bifurcation preview: how equilibrium type changes with parameters
+
+```{r load-packages, message = FALSE}
+library(ggphasr)
+library(ggplot2)
+```
+
+---
+
+## 1  Finding equilibria numerically
+
+For simple systems, equilibria can often be found by hand.  For
+nonlinear systems, numerical root-finding is more reliable.
+`find_equilibrium()` uses Newton–Raphson iteration (via
+`rootSolve::multiroot()`) to locate equilibria from one or more
+starting points.
+
+### 1.1  Single starting point
+
+```{r find-single}
+lv_params <- c(alpha = 1, beta = 0.5, delta = 0.5, gamma = 1)
+
+# Known interior equilibrium near (2, 2)
+eq_interior <- find_equilibrium(
+  ode_lotka_volterra,
+  y0         = c(1.5, 1.5),
+  parameters = lv_params
+)
+eq_interior
+```
+
+### 1.2  Grid search for multiple equilibria
+
+When a system has several equilibria and their locations are not known
+in advance, use `y0 = NULL` to trigger an automatic grid search.
+`find_equilibrium()` places starting points on a regular grid over
+`xlim` × `ylim`, runs Newton–Raphson from each, and deduplicates the
+results:
+
+```{r find-grid}
+# example_11: dx/dt = x(3-x-2y), dy/dt = y(2-x-y)
+# Four equilibria: (0,0), (3,0), (0,2), (1,1)
+eq_list <- find_equilibrium(
+  ode_example_11,
+  y0     = NULL,
+  xlim   = c(0, 4),
+  ylim   = c(0, 3),
+  n_grid = 12L
+)
+
+# Print each equilibrium rounded to 4 decimal places
+lapply(eq_list, round, digits = 4)
+```
+
+> **Technical aside:** Newton–Raphson requires an initial guess and may
+> converge to a non-equilibrium point or fail to converge if the
+> starting point is far from any root.  `find_equilibrium()` guards
+> against this by verifying that the residual $\|f(x^*)\|_\infty$ is
+> below a tolerance threshold before accepting a root.  Results are
+> sorted by x-coordinate and deduplicated using a Euclidean distance
+> threshold (`dedup_tol = 1e-4` by default).
+
+---
+
+## 2  The Jacobian matrix and linearization
+
+The stability of an equilibrium $(x^*, y^*)$ is determined by the
+behavior of nearby solutions.  Near an equilibrium, the nonlinear
+system
+
+$$\frac{d\mathbf{y}}{dt} = \mathbf{F}(\mathbf{y})$$
+
+can be approximated by its **linearization**:
+
+$$\frac{d\boldsymbol{\xi}}{dt} \approx J\,\boldsymbol{\xi},$$
+
+where $\boldsymbol{\xi} = \mathbf{y} - \mathbf{y}^*$ is the
+displacement from equilibrium and $J$ is the **Jacobian matrix**:
+
+$$J = \begin{pmatrix}
+\partial f/\partial x & \partial f/\partial y \\
+\partial g/\partial x & \partial g/\partial y
+\end{pmatrix}\bigg|_{(x^*, y^*)}.$$
+
+The eigenvalues $\lambda_1, \lambda_2$ of $J$ determine the local
+behavior:
+
+- If both $\text{Re}(\lambda_i) < 0$: the equilibrium is **stable**
+  (trajectories approach it).
+- If any $\text{Re}(\lambda_i) > 0$: the equilibrium is **unstable**
+  (trajectories depart from it).
+- If $\lambda_1 < 0 < \lambda_2$ (one of each sign): the equilibrium
+  is a **saddle**.
+
+`classify_equilibrium()` computes the Jacobian numerically via forward
+finite differences and classifies the equilibrium using the
+**trace-determinant** criterion (see Section 4):
+
+```{r jacobian-example}
+# Jacobian at the Lotka-Volterra interior equilibrium (2, 2)
+# Analytic Jacobian: [[0, -1], [0.5, 0]] -> tr = 0, det = 0.5
+# -> Center (purely imaginary eigenvalues)
+
+cl_interior <- classify_equilibrium(
+  ode_lotka_volterra,
+  equilibrium = eq_interior[[1L]],
+  parameters  = lv_params
+)
+
+cl_interior[, c("x", "y", "classification", "tr", "det",
+                 "jacobian_11", "jacobian_12",
+                 "jacobian_21", "jacobian_22")]
+```
+
+```{r jacobian-eigenvalues}
+cl_interior[, c("lambda_1_re", "lambda_1_im",
+                 "lambda_2_re", "lambda_2_im")]
+```
+
+The eigenvalues are $\lambda = \pm i\sqrt{0.5} \approx \pm 0.707\,i$
+— purely imaginary, confirming the center classification.
+
+---
+
+## 3  Classification table for a complete system
+
+Combining `find_equilibrium()` and `classify_equilibrium()` via
+`lapply()` produces a tidy summary table for all equilibria at once:
+
+```{r classify-all}
+# All four equilibria of example_11
+eq_table_11 <- do.call(rbind, lapply(eq_list, function(eq) {
+  classify_equilibrium(ode_example_11, equilibrium = eq)
+}))
+
+eq_table_11[, c("x", "y", "classification", "tr", "det")]
+```
+
+This table immediately reveals the qualitative structure: the origin
+and the coexistence point $(1, 1)$ are saddles, while $(3, 0)$ and
+$(0, 2)$ are the stable single-species equilibria.
+
+---
+
+## 4  The trace-determinant plane
+
+For a 2D system, the Jacobian has two eigenvalues whose character is
+completely determined by the **trace** $\tau = \text{tr}(J)$ and
+**determinant** $\Delta = \det(J)$:
+
+$$\lambda_{1,2} = \frac{\tau \pm \sqrt{\tau^2 - 4\Delta}}{2}.$$
+
+The classification rules are:
+
+| Region | Condition | Type |
+|---|---|---|
+| $\Delta < 0$ | Any $\tau$ | Saddle |
+| $\Delta > 0$, $\tau^2 - 4\Delta > 0$, $\tau < 0$ | — | Stable node |
+| $\Delta > 0$, $\tau^2 - 4\Delta > 0$, $\tau > 0$ | — | Unstable node |
+| $\Delta > 0$, $\tau^2 - 4\Delta < 0$, $\tau < 0$ | — | Stable spiral |
+| $\Delta > 0$, $\tau^2 - 4\Delta < 0$, $\tau > 0$ | — | Unstable spiral |
+| $\Delta > 0$, $\tau = 0$ | — | Center |
+
+The parabola $\tau^2 = 4\Delta$ separates nodes from spirals.
+
+We can visualize this by tracking how the equilibrium type of the
+**simple pendulum's stable equilibrium** at the origin moves through
+the trace-determinant plane as the damping coefficient $b$ increases:
+
+```{r td-plane, fig.height = 4.5}
+b_vals   <- seq(0, 3, by = 0.15)
+
+td_table <- do.call(rbind, lapply(b_vals, function(b) {
+  result    <- classify_equilibrium(
+    ode_simple_pendulum,
+    equilibrium = c(0, 0),
+    parameters  = c(gL = 1, b = b)
+  )
+  result$b  <- b
+  result
+}))
+
+# Parabola tau^2 = 4*delta (node/spiral boundary)
+tau_seq    <- seq(-3.2, 0.2, length.out = 200)
+parabola   <- data.frame(tau = tau_seq, delta = tau_seq^2 / 4)
+
+ggplot(td_table, aes(x = tr, y = det)) +
+  # Parabola separating nodes from spirals
+  geom_line(data = parabola, aes(x = tau, y = delta),
+            color = "grey60", linetype = "dashed", linewidth = 0.7) +
+  # Reference lines
+  geom_hline(yintercept = 0, color = "grey70", linewidth = 0.5) +
+  geom_vline(xintercept = 0, color = "grey70", linewidth = 0.5) +
+  # Path through the plane as b increases
+  geom_path(color = "grey50", linewidth = 0.6) +
+  geom_point(aes(color = classification), size = 3) +
+  scale_color_brewer(palette = "Set1", name = "Type") +
+  # Annotate key regions
+  annotate("text", x = -2.5, y = 2.5,
+           label = "Stable\nspiral",   size = 3, color = "grey40") +
+  annotate("text", x = -2.5, y = 0.3,
+           label = "Stable\nnode",     size = 3, color = "grey40") +
+  annotate("text", x =  0.5, y = 2.5,
+           label = "Unstable\nspiral", size = 3, color = "grey40") +
+  annotate("text", x = -1.0, y = -0.5,
+           label = "Saddle",           size = 3, color = "grey40") +
+  annotate("text", x =  0.1, y = 1.05,
+           label = "tau^2 == 4*Delta", parse = TRUE,
+           size  = 3, color = "grey50", hjust = 0) +
+  labs(
+    x     = "Trace (tau)",
+    y     = "Determinant (Delta)",
+    title = "Trace-determinant plane: pendulum origin as b increases"
+  ) +
+  coord_cartesian(xlim = c(-3.5, 1), ylim = c(-0.8, 3)) +
+  theme_phase_plane()
+```
+
+As $b$ increases from 0, the equilibrium moves from a **center**
+($\tau = 0$, $\Delta > 0$) through **stable spirals** ($\tau < 0$,
+complex eigenvalues) and crosses the parabola $\tau^2 = 4\Delta$ to
+become a **stable node** (real eigenvalues) — the overdamped regime.
+
+---
+
+## 5  Stable and unstable manifolds
+
+At a **saddle point**, the Jacobian has one positive and one negative
+eigenvalue.  The corresponding eigenvectors define two special
+trajectories:
+
+- **Stable manifold** $W^s$: the set of initial conditions that
+  converge to the saddle as $t \to +\infty$.  Locally aligned with
+  the eigenvector of the negative eigenvalue.
+- **Unstable manifold** $W^u$: the set of initial conditions that
+  converge to the saddle as $t \to -\infty$ (equivalently, depart
+  from it as $t \to +\infty$).  Locally aligned with the eigenvector
+  of the positive eigenvalue.
+
+`gg_manifolds()` computes both manifolds by:
+
+1. Computing the Jacobian eigenvectors at the saddle.
+2. Placing seed points at distance `epsilon` from the saddle along
+   each eigenvector direction.
+3. Integrating **forward** from the unstable seeds and **backward**
+   from the stable seeds.
+
+### 5.1  Linear saddle: example_08
+
+For the linear system $dx/dt = x$, $dy/dt = -y$, the stable manifold
+is exactly the $y$-axis and the unstable manifold is exactly the
+$x$-axis — a useful verification case:
+
+```{r manifolds-linear}
+gg_flow_field(ode_example_08,
+              xlim  = c(-3, 3),
+              ylim  = c(-3, 3),
+              title = "Linear saddle: exact manifolds") +
+  gg_manifolds(ode_example_08,
+               equilibrium = c(0, 0))
+```
+
+### 5.2  Nonlinear saddle: example_11 competition model
+
+For the nonlinear competition model, the saddle at $(1, 1)$ has curved
+manifolds.  The **stable manifold is the separatrix** — the curve that
+divides the phase plane into the basin of attraction of $(3, 0)$
+(species 1 wins) and the basin of attraction of $(0, 2)$ (species 2
+wins):
+
+```{r manifolds-competition}
+# First classify the saddle to reuse the Jacobian
+eq_saddle <- find_equilibrium(ode_example_11, y0 = c(0.8, 0.8))
+cl_saddle  <- classify_equilibrium(ode_example_11,
+                                    equilibrium = eq_saddle[[1L]])
+cl_saddle[, c("x", "y", "classification")]
+
+gg_flow_field(ode_example_11,
+              xlim  = c(0, 4),
+              ylim  = c(0, 3),
+              title = "Competition model: saddle manifolds") +
+  gg_nullclines(ode_example_11,
+                xlim            = c(0, 4),
+                ylim            = c(0, 3),
+                legend_position = "bottom") +
+  gg_manifolds(ode_example_11,
+               equilibrium   = eq_saddle[[1L]],
+               eq_classified = cl_saddle,
+               t_manifold    = 5) +
+  gg_trajectory(ode_example_11,
+                y0   = list(c(0.2, 0.2), c(3.5, 0.2),
+                             c(0.2, 2.8), c(2.0, 2.0)),
+                xlim = c(0, 4), ylim = c(0, 3),
+                t_end = 8, color = "grey50",
+                add_start_point = FALSE, add_arrows = FALSE)
+```
+
+Trajectories starting on opposite sides of the stable manifold (blue
+dashed) converge to different outcomes — a concrete illustration of
+why the separatrix is so important for understanding long-run behavior.
+
+---
+
+## 6  Complete worked example: genetic toggle switch
+
+The Gardner et al. (2000) genetic toggle switch models two mutually
+repressing proteins $u$ and $v$:
+
+$$\frac{du}{dt} = \frac{\alpha_1}{1 + v^\beta} - u, \qquad
+\frac{dv}{dt} = \frac{\alpha_2}{1 + u^\gamma} - v.$$
+
+For sufficiently large $\alpha_1$, $\alpha_2$ and cooperativity
+coefficients $\beta$, $\gamma > 1$, the system is **bistable**: two
+stable equilibria (one protein dominant) separated by an unstable
+saddle.  This bistability is the mechanism of synthetic biological
+memory.
+
+```{r toggle-params}
+toggle_params <- c(alpha1 = 3, alpha2 = 3, beta = 2, gamma = 2)
+```
+
+### 6.1  Phase plane and equilibria
+
+```{r toggle-phase}
+result_toggle <- gg_phase_plane(
+  ode_toggle,
+  xlim            = c(0, 4),
+  ylim            = c(0, 4),
+  parameters      = toggle_params,
+  t_end           = 10,
+  n_ic            = 5,
+  title           = "Genetic toggle switch",
+  legend_position = "bottom"
+)
+result_toggle$plot +
+  labs(x = "Protein u", y = "Protein v")
+```
+
+```{r toggle-eq}
+result_toggle$equilibria[, c("x", "y", "classification", "tr", "det")]
+```
+
+The toggle switch has three equilibria: two stable nodes (one protein
+dominant) and one saddle (unstable coexistence).
+
+### 6.2  Separatrix via manifolds
+
+```{r toggle-manifolds}
+# Extract the saddle
+saddle_toggle <- result_toggle$equilibria[
+  result_toggle$equilibria$classification == "Saddle", ]
+saddle_coords <- c(saddle_toggle$x[[1L]], saddle_toggle$y[[1L]])
+
+# Reclassify to get the Jacobian
+cl_toggle <- classify_equilibrium(ode_toggle,
+                                   equilibrium = saddle_coords,
+                                   parameters  = toggle_params)
+
+result_toggle$plot +
+  gg_manifolds(ode_toggle,
+               equilibrium   = saddle_coords,
+               parameters    = toggle_params,
+               eq_classified = cl_toggle,
+               t_manifold    = 6) +
+  labs(x     = "Protein u",
+       y     = "Protein v",
+       title = "Toggle switch: separatrix")
+```
+
+The stable manifold (blue dashed curve) is the separatrix between the
+two basins of attraction.  A perturbation that pushes the system across
+this boundary causes an irreversible switch from one stable state to
+the other — this is precisely the "memory" property of the toggle
+switch.
+
+---
+
+## 7  Bifurcation preview: how equilibria change with parameters
+
+A **bifurcation** occurs when a qualitative change in the phase
+portrait happens as a parameter crosses a critical value.  `ggphasr`
+can illustrate bifurcations by repeating the classification workflow
+across a range of parameter values.
+
+### 7.1  Hopf bifurcation in the Van der Pol oscillator
+
+The Van der Pol origin is an unstable spiral for $\mu > 0$ and a
+center for $\mu = 0$.  As $\mu$ increases, the trace of the Jacobian
+increases, moving the origin further into the unstable region.  We can
+track this:
+
+```{r hopf-table}
+mu_vals <- c(0, 0.5, 1, 2, 3)
+
+hopf_table <- do.call(rbind, lapply(mu_vals, function(mu) {
+  result    <- classify_equilibrium(
+    ode_van_der_pol,
+    equilibrium = c(0, 0),
+    parameters  = c(mu = mu)
+  )
+  result$mu <- mu
+  result
+}))
+
+hopf_table[, c("mu", "classification", "tr", "det",
+                "lambda_1_re", "lambda_1_im")]
+```
+
+At $\mu = 0$ the origin is a center ($\tau = 0$).  For $\mu > 0$ the
+trace becomes positive and the origin is an unstable spiral — a Hopf
+bifurcation occurs at $\mu = 0$.  For $\mu > 0$ a stable limit cycle
+exists (as seen in the previous vignette).
+
+### 7.2  Saddle-node bifurcation preview
+
+Consider a user-defined 1D system with a bifurcation parameter $r$:
+
+$$\frac{dy}{dt} = r + y^2.$$
+
+For $r < 0$ there are two equilibria at $y^* = \pm\sqrt{-r}$.  At
+$r = 0$ they collide in a **saddle-node bifurcation** and disappear
+for $r > 0$.
+
+```{r sn-bifurcation}
+saddle_node <- function(y, parameters = NULL) {
+  r <- parameters[["r"]]
+  r + y^2
+}
+
+# r = -1: two equilibria
+eq_sn_neg <- find_equilibrium(saddle_node,
+                               y0 = NULL, system = "one.dim",
+                               ylim = c(-3, 3),
+                               parameters = c(r = -1))
+cat("r = -1: equilibria at y =",
+    round(sapply(eq_sn_neg, `[[`, 1L), 4), "\n")
+
+# r = 0: one equilibrium (the bifurcation point)
+eq_sn_zero <- find_equilibrium(saddle_node,
+                                y0 = NULL, system = "one.dim",
+                                ylim = c(-1, 1),
+                                parameters = c(r = 0))
+cat("r = 0:  equilibria at y =",
+    round(sapply(eq_sn_zero, `[[`, 1L), 4), "\n")
+
+# r = 1: no equilibria in this range
+eq_sn_pos <- find_equilibrium(saddle_node,
+                               y0 = NULL, system = "one.dim",
+                               ylim = c(-3, 3),
+                               parameters = c(r = 1))
+cat("r = 1:  equilibria found:", length(eq_sn_pos), "\n")
+```
+
+```{r sn-portraits, fig.width = 9, fig.height = 3.5}
+make_sn_plot <- function(r) {
+  gg_flow_field(
+    saddle_node,
+    xlim       = c(0, 3),
+    ylim       = c(-2.5, 2.5),
+    system     = "one.dim",
+    parameters = c(r = r),
+    title      = paste0("r = ", r)
+  ) +
+    gg_phase_portrait(
+      saddle_node,
+      ylim       = c(-2.5, 2.5),
+      xlim       = c(0, 3),
+      parameters = c(r = r)
+    )
+}
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  library(patchwork)
+  make_sn_plot(-1) | make_sn_plot(0) | make_sn_plot(1)
+} else {
+  make_sn_plot(-1)
+}
+```
+
+The three panels show the phase line before the bifurcation (two
+equilibria), at the bifurcation (one semi-stable equilibrium), and
+after the bifurcation (no equilibria — all solutions escape to
+$+\infty$).
+
+---
+
+## Summary
+
+This vignette covered the complete equilibrium analysis workflow in
+`ggphasr`:
+
+| Task | Function |
+|---|---|
+| Find equilibria (single guess) | `find_equilibrium(deriv, y0 = c(...))` |
+| Find equilibria (grid search) | `find_equilibrium(deriv, y0 = NULL, xlim, ylim)` |
+| Classify one equilibrium | `classify_equilibrium(deriv, equilibrium)` |
+| Classify all equilibria | `do.call(rbind, lapply(eq_list, classify_equilibrium, ...))` |
+| Draw manifolds | `gg_manifolds(deriv, equilibrium, eq_classified)` |
+| All-in-one analysis | `gg_phase_plane(deriv, xlim, ylim)` |
+
+The key conceptual tools are:
+
+- **Newton–Raphson root-finding** locates equilibria numerically
+- **The Jacobian and its eigenvalues** determine local stability
+- **The trace-determinant plane** organizes all 2D equilibrium types
+- **Stable/unstable manifolds** of saddles organize the global phase
+  portrait into basins of attraction
+
+Together these tools provide a complete qualitative picture of an
+autonomous ODE system's behavior without requiring closed-form
+solutions.
+
+## References
+
+Gardner TS, Cantor CR, Collins JJ (2000). Construction of a genetic
+toggle switch in *Escherichia coli*. *Nature* **403**: 339–342.
+
+Grayling MJ (2014). phaseR: An R Package for Phase Plane Analysis of
+Autonomous ODE Systems. *The R Journal* **6**(2): 43–51.
+
+Strogatz SH (2015). *Nonlinear Dynamics and Chaos* (2nd ed.).
+Westview Press.
