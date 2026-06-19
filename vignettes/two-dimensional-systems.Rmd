@@ -149,9 +149,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_lotka_volterra,
-    xlim       = c(0, 5),
-    ylim       = c(0, 5),
-    parameters = lv_params
+    xlim            = c(0, 5),
+    ylim            = c(0, 5),
+    parameters      = lv_params,
+    legend_position = "bottom"
   )
 ```
 
@@ -180,9 +181,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_lotka_volterra,
-    xlim       = c(0, 5),
-    ylim       = c(0, 5),
-    parameters = lv_params
+    xlim            = c(0, 5),
+    ylim            = c(0, 5),
+    parameters      = lv_params,
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_lotka_volterra,
@@ -266,9 +268,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     sir_ode,
-    xlim       = c(0, 1),
-    ylim       = c(0, 0.3),
-    parameters = sir_params
+    xlim            = c(0, 1),
+    ylim            = c(0, 0.3),
+    parameters      = sir_params,
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     sir_ode,
@@ -310,8 +313,10 @@ gg_flow_field(
   title      = "SIR model: built-in ode_sir()"
 ) +
   gg_nullclines(ode_sir,
-                xlim = c(0, 1), ylim = c(0, 0.3),
-                parameters = sir_params)
+                xlim            = c(0, 1),
+                ylim            = c(0, 0.3),
+                parameters      = sir_params,
+                legend_position = "bottom")
 ```
 
 ---
@@ -340,9 +345,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_van_der_pol,
-    xlim       = c(-3, 3),
-    ylim       = c(-4, 4),
-    parameters = c(mu = 1)
+    xlim            = c(-3, 3),
+    ylim            = c(-4, 4),
+    parameters      = c(mu = 1),
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_van_der_pol,
@@ -437,9 +443,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_competition,
-    xlim       = c(0, 12),
-    ylim       = c(0, 12),
-    parameters = params_coexist
+    xlim            = c(0, 12),
+    ylim            = c(0, 12),
+    parameters      = params_coexist,
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_competition,
@@ -466,12 +473,13 @@ params_bistable <- c(r1=1, r2=1, K1=10, K2=10, a12=1.5, a21=1.5)
 
 result_bistable <- gg_phase_plane(
   ode_competition,
-  xlim       = c(0, 12),
-  ylim       = c(0, 12),
-  parameters = params_bistable,
-  t_end      = 20,
-  n_ic       = 5,
-  title      = "Competition: bistability (priority effects)"
+  xlim            = c(0, 12),
+  ylim            = c(0, 12),
+  parameters      = params_bistable,
+  t_end           = 20,
+  n_ic            = 5,
+  title           = "Competition: bistability (priority effects)",
+  legend_position = "bottom"
 )
 result_bistable$plot +
   labs(x = "Species 1 (N1)", y = "Species 2 (N2)")
@@ -541,9 +549,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_simple_pendulum,
-    xlim       = c(-pi, pi),
-    ylim       = c(-3, 3),
-    parameters = c(gL = 1, b = 0)
+    xlim            = c(-pi, pi),
+    ylim            = c(-3, 3),
+    parameters      = c(gL = 1, b = 0),
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_simple_pendulum,
@@ -574,9 +583,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_simple_pendulum,
-    xlim       = c(-pi, pi),
-    ylim       = c(-3, 3),
-    parameters = c(gL = 1, b = 0.5)
+    xlim            = c(-pi, pi),
+    ylim            = c(-3, 3),
+    parameters      = c(gL = 1, b = 0.5),
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_simple_pendulum,

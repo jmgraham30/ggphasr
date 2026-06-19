@@ -321,7 +321,9 @@ gg_flow_field(ode_example_11,
               ylim  = c(0, 3),
               title = "Competition model: saddle manifolds") +
   gg_nullclines(ode_example_11,
-                xlim = c(0, 4), ylim = c(0, 3)) +
+                xlim            = c(0, 4),
+                ylim            = c(0, 3),
+                legend_position = "bottom") +
   gg_manifolds(ode_example_11,
                equilibrium   = eq_saddle[[1L]],
                eq_classified = cl_saddle,
@@ -363,12 +365,13 @@ toggle_params <- c(alpha1 = 3, alpha2 = 3, beta = 2, gamma = 2)
 ```{r toggle-phase}
 result_toggle <- gg_phase_plane(
   ode_toggle,
-  xlim       = c(0, 4),
-  ylim       = c(0, 4),
-  parameters = toggle_params,
-  t_end      = 10,
-  n_ic       = 5,
-  title      = "Genetic toggle switch"
+  xlim            = c(0, 4),
+  ylim            = c(0, 4),
+  parameters      = toggle_params,
+  t_end           = 10,
+  n_ic            = 5,
+  title           = "Genetic toggle switch",
+  legend_position = "bottom"
 )
 result_toggle$plot +
   labs(x = "Protein u", y = "Protein v")

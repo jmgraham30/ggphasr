@@ -55,9 +55,10 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_lotka_volterra,
-    xlim       = c(0, 5),
-    ylim       = c(0, 5),
-    parameters = lv_params
+    xlim            = c(0, 5),
+    ylim            = c(0, 5),
+    parameters      = lv_params,
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_lotka_volterra,
@@ -84,9 +85,10 @@ single call:
 ``` r
 result <- gg_phase_plane(
   ode_lotka_volterra,
-  xlim       = c(0, 5),
-  ylim       = c(0, 5),
-  parameters = lv_params
+  xlim            = c(0, 5),
+  ylim            = c(0, 5),
+  parameters      = lv_params,
+  legend_position = "bottom"
 )
 
 result$plot
@@ -200,7 +202,9 @@ eq_cl <- classify_equilibrium(ode_example_11, equilibrium = eq[[1L]])
 gg_flow_field(ode_example_11,
               xlim = c(0, 4), ylim = c(0, 3)) +
   gg_nullclines(ode_example_11,
-                xlim = c(0, 4), ylim = c(0, 3)) +
+                xlim            = c(0, 4),
+                ylim            = c(0, 3),
+                legend_position = "bottom") +
   gg_manifolds(ode_example_11,
                equilibrium   = eq[[1L]],
                eq_classified = eq_cl,

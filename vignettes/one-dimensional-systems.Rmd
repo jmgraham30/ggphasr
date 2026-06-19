@@ -184,10 +184,11 @@ gg_flow_field(
 ) +
   gg_nullclines(
     ode_logistic,
-    xlim       = c(0, 8),
-    ylim       = c(-1, 12),
-    system     = "one.dim",
-    parameters = c(r = 1, K = 10)
+    xlim            = c(0, 8),
+    ylim            = c(-1, 12),
+    system          = "one.dim",
+    parameters      = c(r = 1, K = 10),
+    legend_position = "bottom"
   ) +
   gg_trajectory(
     ode_logistic,
@@ -354,11 +355,12 @@ equilibria — in a single call.  It returns a named list with `$plot`
 ```{r cubic-phase-plane}
 result <- gg_phase_plane(
   cubic_ode,
-  xlim   = c(0, 5),
-  ylim   = c(-0.5, 2.5),
-  system = "one.dim",
-  t_end  = 4,
-  title  = "Cubic ODE: gg_phase_plane() output"
+  xlim            = c(0, 5),
+  ylim            = c(-0.5, 2.5),
+  system          = "one.dim",
+  t_end           = 4,
+  title           = "Cubic ODE: gg_phase_plane() output",
+  legend_position = "bottom"
 )
 
 result$plot
