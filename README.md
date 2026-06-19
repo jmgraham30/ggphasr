@@ -27,8 +27,8 @@ where base R graphics are replaced with `ggplot2`.
 Install the development version from GitHub:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("jmgraham30/ggphasr")
+# install.packages("pak")
+pak::pak("jmgraham30/ggphasr")
 ```
 
 ## Quick start
