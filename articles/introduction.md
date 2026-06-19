@@ -426,17 +426,21 @@ All built-in systems use Convention A and can be passed directly to any
 The three topic vignettes provide full mathematical exposition and
 detailed worked examples:
 
-``` r
+Three vignettes provide detailed tutorials with full mathematical
+exposition:
 
-# One-dimensional systems: phase lines, logistic growth, stability
-vignette("one-dimensional-systems", package = "ggphasr")
-
-# Two-dimensional systems: phase planes, nullclines, limit cycles
-vignette("two-dimensional-systems", package = "ggphasr")
-
-# Equilibrium analysis: Jacobian, trace-determinant, manifolds
-vignette("equilibrium-analysis", package = "ggphasr")
-```
+- [**One-Dimensional ODE
+  Systems**](https://jmgraham30.github.io/ggphasr/articles/one-dimensional-systems.html)
+  — phase lines, equilibria, stability, the logistic and von Bertalanffy
+  growth models
+- [**Two-Dimensional ODE
+  Systems**](https://jmgraham30.github.io/ggphasr/articles/two-dimensional-systems.html)
+  — phase planes, nullclines, trajectories, Lotka-Volterra, SIR, Van der
+  Pol, competition
+- [**Equilibrium
+  Analysis**](https://jmgraham30.github.io/ggphasr/articles/equilibrium-analysis.html)
+  — Jacobian linearization, the trace-determinant plane, manifolds,
+  bifurcation preview
 
 ------------------------------------------------------------------------
 
