@@ -23,17 +23,17 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
     deSolve,
-    ggforce,
     ggplot2,
-    metR,
-    rlang
+    rlang,
+    rootSolve
 Suggests:
     covr,
     gganimate,
+    ggforce,
     knitr,
+    metR,
     pkgdown,
     rmarkdown,
-    rootSolve,
     scales,
     shiny,
     testthat (>= 3.0.0)
