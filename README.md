@@ -1,27 +1,15 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse  = TRUE,
-  comment   = "#>",
-  fig.path  = "man/figures/README-",
-  out.width = "70%",
-  fig.align = "center",
-  fig.width  = 6,
-  fig.height = 5
-)
-```
 
 # ggphasr <img src="man/figures/logo.png" align="right" height="139" alt="ggphasr hex sticker" />
 
 <!-- badges: start -->
+
 [![R-CMD-check](https://github.com/jmgraham30/ggphasr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jmgraham30/ggphasr/actions/workflows/R-CMD-check.yaml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 `ggphasr` provides tools for qualitative analysis of one- and
@@ -40,7 +28,7 @@ CRAN.
 
 Install the development version from GitHub:
 
-```r
+``` r
 # install.packages("remotes")
 remotes::install_github("jmgraham30/ggphasr")
 ```
@@ -50,7 +38,7 @@ remotes::install_github("jmgraham30/ggphasr")
 `ggphasr` functions compose naturally with the `+` operator, just like
 `ggplot2` itself. A complete phase portrait is built layer by layer:
 
-```{r quick-start, message = FALSE}
+``` r
 library(ggphasr)
 library(ggplot2)
 
@@ -87,11 +75,13 @@ gg_flow_field(
   )
 ```
 
-For quick exploration, `gg_phase_plane()` produces a complete analysis
-— flow field, nullclines, trajectories, and classified equilibria — in
-a single call:
+<img src="man/figures/README-quick-start-1.png" alt="" width="70%" style="display: block; margin: auto;" />
 
-```{r phase-plane, message = FALSE}
+For quick exploration, `gg_phase_plane()` produces a complete analysis —
+flow field, nullclines, trajectories, and classified equilibria — in a
+single call:
+
+``` r
 result <- gg_phase_plane(
   ode_lotka_volterra,
   xlim       = c(0, 5),
@@ -100,8 +90,16 @@ result <- gg_phase_plane(
 )
 
 result$plot
+```
+
+<img src="man/figures/README-phase-plane-1.png" alt="" width="70%" style="display: block; margin: auto;" />
+
+``` r
 
 result$equilibria[, c("x", "y", "classification")]
+#>   x y classification
+#> 1 0 0         Saddle
+#> 2 2 2         Center
 ```
 
 ## ODE conventions
@@ -111,7 +109,7 @@ result$equilibria[, c("x", "y", "classification")]
 **Convention A** — deSolve-compatible (recommended for compatibility
 with `deSolve::ode()`):
 
-```r
+``` r
 my_ode <- function(t, y, parameters) {
   list(c(dy1, dy2))
 }
@@ -119,13 +117,13 @@ my_ode <- function(t, y, parameters) {
 
 **Convention B** — simplified, for quick exploration:
 
-```r
+``` r
 my_ode <- function(x, y, parameters = NULL) {
   c(dx, dy)
 }
 ```
 
-The convention is detected automatically from the function's argument
+The convention is detected automatically from the function’s argument
 names. All built-in ODE systems use Convention A.
 
 ## Function overview
@@ -133,7 +131,7 @@ names. All built-in ODE systems use Convention A.
 ### Plotting functions
 
 | Function | Returns | Description |
-|---|---|---|
+|----|----|----|
 | `gg_flow_field()` | `ggplot` | Direction/velocity field arrows |
 | `gg_nullclines()` | layer list | Zero-isocline curves |
 | `gg_trajectory()` | layer list | Numerically integrated trajectories |
@@ -145,7 +143,7 @@ names. All built-in ODE systems use Convention A.
 ### Analysis functions
 
 | Function | Returns | Description |
-|---|---|---|
+|----|----|----|
 | `find_equilibrium()` | list of vectors | Newton–Raphson equilibrium finding |
 | `classify_equilibrium()` | data frame | Trace-determinant stability classification |
 | `add_layer()` | `ggphasr_result` | Add ggplot2 layers to a `ggphasr_result` |
@@ -155,9 +153,9 @@ names. All built-in ODE systems use Convention A.
 **1D models:** `ode_exponential()`, `ode_logistic()`,
 `ode_monomolecular()`, `ode_von_bertalanffy()`
 
-**2D models:** `ode_lotka_volterra()`, `ode_sir()`,
-`ode_van_der_pol()`, `ode_simple_pendulum()`, `ode_competition()`,
-`ode_toggle()`, `ode_morris_lecar()`, `ode_lindemann()`
+**2D models:** `ode_lotka_volterra()`, `ode_sir()`, `ode_van_der_pol()`,
+`ode_simple_pendulum()`, `ode_competition()`, `ode_toggle()`,
+`ode_morris_lecar()`, `ode_lindemann()`
 
 **Textbook examples:** `ode_example_01()` through `ode_example_15()`
 
@@ -166,7 +164,7 @@ names. All built-in ODE systems use Convention A.
 `find_equilibrium()` and `classify_equilibrium()` provide a complete
 numerical workflow for locating and classifying equilibria:
 
-```{r equilibrium, message = FALSE}
+``` r
 # Find all equilibria of the competition model by grid search
 eq_list <- find_equilibrium(
   ode_competition,
@@ -182,6 +180,11 @@ do.call(rbind, lapply(eq_list, function(eq) {
                        parameters = c(r1=1, r2=1, K1=10, K2=10,
                                       a12=0.5, a21=0.5))
 }))[, c("x", "y", "classification", "tr", "det")]
+#>               x         y classification         tr        det
+#> 1 -4.425602e-10 10.000000         Saddle -0.5000002 -0.4999999
+#> 2  0.000000e+00  0.000000  Unstable node  1.9999998  0.9999998
+#> 3  6.666667e+00  6.666667    Stable node -1.3333335  0.3333335
+#> 4  1.000000e+01  0.000000         Saddle -0.5000002 -0.4999999
 ```
 
 ## Stable and unstable manifolds
@@ -190,7 +193,7 @@ do.call(rbind, lapply(eq_list, function(eq) {
 points, revealing the separatrices that organize the phase plane into
 basins of attraction:
 
-```{r manifolds, message = FALSE}
+``` r
 eq    <- find_equilibrium(ode_example_11, y0 = c(0.8, 0.8))
 eq_cl <- classify_equilibrium(ode_example_11, equilibrium = eq[[1L]])
 
@@ -202,7 +205,80 @@ gg_flow_field(ode_example_11,
                equilibrium   = eq[[1L]],
                eq_classified = eq_cl,
                t_manifold    = 5)
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.90518e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.90518e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.90518e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.52334e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.52334e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.26208e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.26208e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.26208e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.00913e-16
+#>  
+#> DLSODA-  Warning..Internal T (=R1) and H (=R2) are
+#>       such that in the machine, T + H = T on the next step  
+#>      (H = step size). Solver will continue anyway.
+#> In above message, R1 = -3.96058, R2 = -1.00913e-16
+#>  
+#> DLSODA-  Above warning has been issued I1 times.  
+#>      It will not be issued again for this problem.
+#> In above message, I1 = 10
+#>  
+#> DINTDY-  T (=R1) illegal      
+#> In above message, R1 = -3.96794
+#>  
+#>       T not in interval TCUR - HU (= R1) to TCUR (=R2)      
+#> In above message, R1 = -3.96058, R2 = -3.96058
+#>  
+#> DINTDY-  T (=R1) illegal      
+#> In above message, R1 = -3.97796
+#>  
+#>       T not in interval TCUR - HU (= R1) to TCUR (=R2)      
+#> In above message, R1 = -3.96058, R2 = -3.96058
+#>  
+#> DLSODA-  Trouble in DINTDY.  ITASK = I1, TOUT = R1
+#> In above message, I1 = 1
+#>  
+#> In above message, R1 = -3.97796
+#> 
 ```
+
+<img src="man/figures/README-manifolds-1.png" alt="" width="70%" style="display: block; margin: auto;" />
 
 ## Vignettes
 
@@ -216,7 +292,7 @@ exposition:
 - **Equilibrium Analysis** — Jacobian linearization, the
   trace-determinant plane, manifolds, bifurcation preview
 
-```r
+``` r
 vignette("one-dimensional-systems", package = "ggphasr")
 vignette("two-dimensional-systems", package = "ggphasr")
 vignette("equilibrium-analysis",    package = "ggphasr")
@@ -226,7 +302,7 @@ vignette("equilibrium-analysis",    package = "ggphasr")
 
 If you use `ggphasr` in your teaching or research, please cite it as:
 
-```r
+``` r
 citation("ggphasr")
 ```
 
