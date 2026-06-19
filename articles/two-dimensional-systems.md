@@ -518,7 +518,7 @@ result_bistable$plot +
 
 result_bistable$equilibria[, c("x", "y", "classification")]
 #>               x  y classification
-#> 1 -1.427043e-11 10    Stable node
+#> 1 -1.426918e-11 10    Stable node
 #> 2  0.000000e+00  0  Unstable node
 #> 3  4.000000e+00  4         Saddle
 #> 4  1.000000e+01  0    Stable node

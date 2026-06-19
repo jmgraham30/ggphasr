@@ -198,7 +198,7 @@ eq_table_11 <- do.call(rbind, lapply(eq_list, function(eq) {
 
 eq_table_11[, c("x", "y", "classification", "tr", "det")]
 #>               x y classification        tr       det
-#> 1 -6.172048e-12 2    Stable node -3.000002  2.000003
+#> 1 -6.171961e-12 2    Stable node -3.000002  2.000003
 #> 2  0.000000e+00 0  Unstable node  4.999998  5.999995
 #> 3  1.000000e+00 1         Saddle -2.000002 -0.999998
 #> 4  3.000000e+00 0    Stable node -4.000002  3.000004

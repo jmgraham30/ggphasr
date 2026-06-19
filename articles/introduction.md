@@ -32,8 +32,8 @@ library(ggplot2)
 
 ``` r
 
-# install.packages("remotes")
-remotes::install_github("jmgraham30/ggphasr")
+# install.packages("pak")
+pak::pak("jmgraham30/ggphasr")
 ```
 
 ------------------------------------------------------------------------

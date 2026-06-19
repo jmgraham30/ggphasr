@@ -144,7 +144,7 @@ do.call(rbind, lapply(eq_list, function(eq) {
   classify_equilibrium(ode_example_11, equilibrium = eq)
 }))
 #>               x y classification        tr       det jacobian_11   jacobian_12
-#> 1 -9.524216e-10 2    Stable node -3.000002  2.000003   -1.000001  1.904843e-09
+#> 1 -9.524185e-10 2    Stable node -3.000002  2.000003   -1.000001  1.904837e-09
 #> 2  0.000000e+00 0  Unstable node  4.999998  5.999995    2.999999  0.000000e+00
 #> 3  1.000000e+00 1         Saddle -2.000002 -0.999998   -1.000001 -2.000000e+00
 #> 4  3.000000e+00 0    Stable node -4.000002  3.000004   -3.000001 -6.000000e+00
