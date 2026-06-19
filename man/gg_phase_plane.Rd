@@ -24,7 +24,7 @@ gg_phase_plane(
   find_equilibria = TRUE,
   eq_n_grid = 10L,
   eq_grid_y0 = NULL,
-  show_eq_legend = TRUE,
+  legend_position = "right",
   xlab = NULL,
   ylab = "y",
   title = NULL
@@ -85,8 +85,14 @@ Default: \code{10}.}
 \item{eq_grid_y0}{List or \code{NULL}. Custom starting points for the
 equilibrium search. If \code{NULL}, a regular grid is used.}
 
-\item{show_eq_legend}{Logical. Whether to show a legend for equilibrium
-types. Default: \code{TRUE}.}
+\item{legend_position}{Character string or numeric vector of length 2.
+Controls the position of all legends (equilibrium types, nullclines)
+in the plot. One of \code{"right"} (default), \code{"left"}, \code{"top"},
+\code{"bottom"}, \code{"none"}, \code{"inside"} (compact legend in the top-right
+corner of the panel), or a numeric vector \code{c(x, y)} with values
+in \verb{[0, 1]} for a custom inside position. Passing \code{"inside"} is
+the most effective way to reclaim plot space when the external
+legend is too large.}
 
 \item{xlab}{Character. x-axis label. Default: \code{"x"} (2D) or \code{"t"} (1D).}
 

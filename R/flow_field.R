@@ -200,6 +200,11 @@
 #'   [ggplot2::geom_hline()] and [ggplot2::geom_vline()].
 #' @param origin_line_color Character. Color of the origin reference lines.
 #'   Default: `"grey40"`.
+#' @param legend_position Character string or numeric vector of length 2.
+#'   Controls legend placement when `color_by_magnitude = TRUE` or when
+#'   multiple systems are supplied via a list. One of `"right"` (default),
+#'   `"left"`, `"top"`, `"bottom"`, `"none"`, `"inside"`, or a numeric
+#'   vector `c(x, y)` with values in `[0, 1]` for a custom inside position.
 #' @param xlab Character. x-axis label. Default: `"x"` for 2D systems,
 #'   `"t"` for 1D systems.
 #' @param ylab Character. y-axis label. Default: `"y"`.
@@ -283,6 +288,7 @@ gg_flow_field <- function(deriv,
                            magnitude_palette   = c("grey80", "#2c7bb6"),
                            add_origin_lines    = TRUE,
                            origin_line_color   = "grey40",
+                           legend_position     = "right",
                            xlab                = NULL,
                            ylab                = "y",
                            title               = NULL) {
@@ -438,6 +444,9 @@ gg_flow_field <- function(deriv,
                               ylim   = ylim,
                               expand = FALSE) +
     ggplot2::labs(x = xlab, y = ylab)
+
+  # ── Legend position ──────────────────────────────────────────────────────
+  p <- p + .legend_theme(legend_position)
 
   # ── Title ────────────────────────────────────────────────────────────────
   if (!is.null(title)) {

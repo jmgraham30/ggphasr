@@ -159,8 +159,14 @@
 #'   Default: `10`.
 #' @param eq_grid_y0 List or `NULL`. Custom starting points for the
 #'   equilibrium search. If `NULL`, a regular grid is used.
-#' @param show_eq_legend Logical. Whether to show a legend for equilibrium
-#'   types. Default: `TRUE`.
+#' @param legend_position Character string or numeric vector of length 2.
+#'   Controls the position of all legends (equilibrium types, nullclines)
+#'   in the plot. One of `"right"` (default), `"left"`, `"top"`,
+#'   `"bottom"`, `"none"`, `"inside"` (compact legend in the top-right
+#'   corner of the panel), or a numeric vector `c(x, y)` with values
+#'   in `[0, 1]` for a custom inside position. Passing `"inside"` is
+#'   the most effective way to reclaim plot space when the external
+#'   legend is too large.
 #'
 #'
 #' @param xlab Character. x-axis label. Default: `"x"` (2D) or `"t"` (1D).
@@ -256,7 +262,7 @@ gg_phase_plane <- function(deriv,
                             find_equilibria   = TRUE,
                             eq_n_grid         = 10L,
                             eq_grid_y0        = NULL,
-                            show_eq_legend    = TRUE,
+                            legend_position   = "right",
                             # labels
                             xlab              = NULL,
                             ylab              = "y",
@@ -424,15 +430,18 @@ gg_phase_plane <- function(deriv,
               values = used_fills
             )
 
-          if (!show_eq_legend) {
-            p <- p + ggplot2::theme(legend.position = "none")
-          }
+
         }
       }
     }
   }
 
-  # ── 5. 1D phase portrait overlay ─────────────────────────────────────────
+  # ── 5. Legend position ────────────────────────────────────────────────────
+  # Applied after all layers are added so it overrides any per-layer legend
+  # settings from gg_nullclines(), gg_trajectory(), etc.
+  p <- p + .legend_theme(legend_position)
+
+  # ── 6. 1D phase portrait overlay ─────────────────────────────────────────
   if (system == "one.dim") {
     p <- p + gg_phase_portrait(
       deriv      = deriv,

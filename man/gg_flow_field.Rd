@@ -21,6 +21,7 @@ gg_flow_field(
   magnitude_palette = c("grey80", "#2c7bb6"),
   add_origin_lines = TRUE,
   origin_line_color = "grey40",
+  legend_position = "right",
   xlab = NULL,
   ylab = "y",
   title = NULL
@@ -87,6 +88,12 @@ lines at \code{x = 0} and \code{y = 0} (or \code{y = 0} only for 1D systems) via
 
 \item{origin_line_color}{Character. Color of the origin reference lines.
 Default: \code{"grey40"}.}
+
+\item{legend_position}{Character string or numeric vector of length 2.
+Controls legend placement when \code{color_by_magnitude = TRUE} or when
+multiple systems are supplied via a list. One of \code{"right"} (default),
+\code{"left"}, \code{"top"}, \code{"bottom"}, \code{"none"}, \code{"inside"}, or a numeric
+vector \code{c(x, y)} with values in \verb{[0, 1]} for a custom inside position.}
 
 \item{xlab}{Character. x-axis label. Default: \code{"x"} for 2D systems,
 \code{"t"} for 1D systems.}

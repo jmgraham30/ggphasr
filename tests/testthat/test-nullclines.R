@@ -80,13 +80,14 @@ test_that("gg_nullclines() returns a list", {
   expect_type(result, "list")
 })
 
-test_that("gg_nullclines() list elements are ggplot2 layers or scales", {
+test_that("gg_nullclines() list elements are ggplot2 layers, scales, or themes", {
   result <- gg_nullclines(ode_lotka_volterra,
                            xlim       = std_xlim,
                            ylim       = std_ylim,
                            parameters = lv_params)
   is_gg <- vapply(result, function(x) {
-    inherits(x, "Layer") || inherits(x, "Scale") || inherits(x, "ggproto")
+    inherits(x, "Layer") || inherits(x, "Scale") ||
+      inherits(x, "ggproto") || inherits(x, "theme")
   }, logical(1L))
   expect_true(all(is_gg))
 })

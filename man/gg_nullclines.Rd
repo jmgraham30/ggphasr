@@ -16,12 +16,13 @@ gg_nullclines(
   x_linetype = "solid",
   y_linetype = "dashed",
   linewidth = 0.75,
-  add_legend = TRUE
+  add_legend = TRUE,
+  legend_position = "right"
 )
 }
 \arguments{
 \item{deriv}{A function describing the ODE system, in Convention A or B.
-See \link{ggphasr} for details.}
+See \link{ggphasr-package} for details.}
 
 \item{xlim}{Numeric vector of length 2. x-axis range. Should match the
 \code{xlim} passed to \code{\link[=gg_flow_field]{gg_flow_field()}}.}
@@ -52,6 +53,12 @@ Default: \code{"dashed"}.}
 
 \item{add_legend}{Logical. If \code{TRUE}, adds a legend entry for each
 nullcline. Default: \code{TRUE}.}
+
+\item{legend_position}{Character string or numeric vector of length 2.
+Controls legend placement. One of \code{"right"} (default), \code{"left"},
+\code{"top"}, \code{"bottom"}, \code{"none"}, \code{"inside"} (top-right corner of the
+panel, compact styling), or a numeric vector \code{c(x, y)} with values
+in \verb{[0, 1]} for a custom inside position.}
 }
 \value{
 A list of \link[ggplot2:ggplot2]{ggplot2} layer objects. Add to a ggplot with \code{+}.

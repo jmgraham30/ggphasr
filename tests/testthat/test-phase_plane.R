@@ -204,12 +204,12 @@ test_that("gg_phase_plane() works with custom y0", {
   expect_no_error(ggplot2::ggplot_build(result$plot))
 })
 
-test_that("gg_phase_plane() works with show_eq_legend = FALSE", {
+test_that("gg_phase_plane() works with legend_position = \"none\"", {
   result <- gg_phase_plane(ode_lotka_volterra,
                             xlim          = std_xlim,
                             ylim          = std_ylim,
                             parameters    = lv_params,
-                            show_eq_legend = FALSE)
+                            legend_position = "none")
   expect_no_error(ggplot2::ggplot_build(result$plot))
 })
 
@@ -362,4 +362,68 @@ test_that("gg_phase_plane() works for Convention B ODE", {
                             find_equilibria = FALSE)
   expect_s3_class(result, "ggphasr_result")
   expect_no_error(ggplot2::ggplot_build(result$plot))
+})
+
+
+# ===========================================================================
+# legend_position argument
+# ===========================================================================
+
+test_that('gg_phase_plane() legend_position = "none" suppresses legend', {
+  result <- gg_phase_plane(ode_lotka_volterra,
+                            xlim            = std_xlim,
+                            ylim            = std_ylim,
+                            parameters      = lv_params,
+                            legend_position = "none")
+  built <- ggplot2::ggplot_build(result$plot)
+  expect_equal(built$plot$theme$legend.position, "none")
+})
+
+test_that('gg_phase_plane() legend_position = "inside" renders without error', {
+  result <- gg_phase_plane(ode_lotka_volterra,
+                            xlim            = std_xlim,
+                            ylim            = std_ylim,
+                            parameters      = lv_params,
+                            legend_position = "inside")
+  expect_no_error(ggplot2::ggplot_build(result$plot))
+})
+
+test_that('gg_phase_plane() legend_position = "bottom" renders without error', {
+  result <- gg_phase_plane(ode_lotka_volterra,
+                            xlim            = std_xlim,
+                            ylim            = std_ylim,
+                            parameters      = lv_params,
+                            legend_position = "bottom")
+  expect_no_error(ggplot2::ggplot_build(result$plot))
+})
+
+test_that("gg_phase_plane() legend_position accepts numeric c(x,y)", {
+  result <- gg_phase_plane(ode_lotka_volterra,
+                            xlim            = std_xlim,
+                            ylim            = std_ylim,
+                            parameters      = lv_params,
+                            legend_position = c(0.95, 0.95))
+  expect_no_error(ggplot2::ggplot_build(result$plot))
+})
+
+test_that("gg_nullclines() legend_position = 'inside' renders without error", {
+  p <- gg_flow_field(ode_lotka_volterra,
+                     xlim = std_xlim, ylim = std_ylim,
+                     parameters = lv_params) +
+    gg_nullclines(ode_lotka_volterra,
+                  xlim            = std_xlim,
+                  ylim            = std_ylim,
+                  parameters      = lv_params,
+                  legend_position = "inside")
+  expect_no_error(ggplot2::ggplot_build(p))
+})
+
+test_that("gg_flow_field() legend_position = 'inside' works for multi-system", {
+  p <- gg_flow_field(
+    deriv = list(saddle = ode_example_08, harmonic = ode_example_06),
+    xlim            = c(-2, 2),
+    ylim            = c(-2, 2),
+    legend_position = "inside"
+  )
+  expect_no_error(ggplot2::ggplot_build(p))
 })

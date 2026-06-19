@@ -290,3 +290,67 @@
 .eval_ode <- function(deriv, t = 0, y, parameters = NULL) {
   deriv(t = t, y = y, parameters = parameters)[[1L]]
 }
+
+
+# ---------------------------------------------------------------------------
+# .legend_theme()
+# ---------------------------------------------------------------------------
+#
+# Returns a ggplot2 theme() object that positions and styles the legend
+# according to the `legend_position` argument used throughout ggphasr.
+#
+# Accepted values:
+#   "right"   — outside right (ggplot2 default)
+#   "left"    — outside left
+#   "top"     — outside top
+#   "bottom"  — outside bottom
+#   "none"    — no legend
+#   "inside"  — inside the panel, top-right corner, compact styling
+#   c(x, y)   — numeric vector passed directly to legend.position.inside
+#
+# @param legend_position Character string or numeric vector of length 2.
+# @return A ggplot2 theme() object.
+#
+.legend_theme <- function(legend_position = "right") {
+
+  # Numeric vector: treat as inside coordinates directly
+  if (is.numeric(legend_position) && length(legend_position) == 2L) {
+    return(ggplot2::theme(
+      legend.position        = "inside",
+      legend.position.inside = legend_position,
+      legend.justification   = c("right", "top"),
+      legend.background      = ggplot2::element_rect(
+        fill      = "white",
+        color     = "grey80",
+        linewidth = 0.3
+      ),
+      legend.margin    = ggplot2::margin(4, 6, 4, 6),
+      legend.spacing.y = ggplot2::unit(2, "pt"),
+      legend.key.size  = ggplot2::unit(12, "pt"),
+      legend.text      = ggplot2::element_text(size = 7.5),
+      legend.title     = ggplot2::element_text(size = 8, face = "bold")
+    ))
+  }
+
+  if (legend_position == "inside") {
+    # Compact legend in top-right corner of the panel
+    return(ggplot2::theme(
+      legend.position        = "inside",
+      legend.position.inside = c(0.98, 0.98),
+      legend.justification   = c("right", "top"),
+      legend.background      = ggplot2::element_rect(
+        fill      = "white",
+        color     = "grey80",
+        linewidth = 0.3
+      ),
+      legend.margin    = ggplot2::margin(4, 6, 4, 6),
+      legend.spacing.y = ggplot2::unit(2, "pt"),
+      legend.key.size  = ggplot2::unit(12, "pt"),
+      legend.text      = ggplot2::element_text(size = 7.5),
+      legend.title     = ggplot2::element_text(size = 8, face = "bold")
+    ))
+  }
+
+  # Standard outside positions: "right", "left", "top", "bottom", "none"
+  ggplot2::theme(legend.position = legend_position)
+}

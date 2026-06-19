@@ -91,7 +91,7 @@
 #' portrait.
 #'
 #' @param deriv A function describing the ODE system, in Convention A or B.
-#'   See [ggphasr] for details.
+#'   See [ggphasr-package] for details.
 #' @param xlim Numeric vector of length 2. x-axis range. Should match the
 #'   `xlim` passed to [ggphasr::gg_flow_field()].
 #' @param ylim Numeric vector of length 2. y-axis range. Should match the
@@ -111,6 +111,11 @@
 #' @param linewidth Numeric. Line width for both nullclines. Default: `0.75`.
 #' @param add_legend Logical. If `TRUE`, adds a legend entry for each
 #'   nullcline. Default: `TRUE`.
+#' @param legend_position Character string or numeric vector of length 2.
+#'   Controls legend placement. One of `"right"` (default), `"left"`,
+#'   `"top"`, `"bottom"`, `"none"`, `"inside"` (top-right corner of the
+#'   panel, compact styling), or a numeric vector `c(x, y)` with values
+#'   in `[0, 1]` for a custom inside position.
 #'
 #' @return A list of [ggplot2] layer objects. Add to a ggplot with `+`.
 #'
@@ -159,7 +164,8 @@ gg_nullclines <- function(deriv,
                            x_linetype  = "solid",
                            y_linetype  = "dashed",
                            linewidth   = 0.75,
-                           add_legend  = TRUE) {
+                           add_legend       = TRUE,
+                           legend_position  = "right") {
 
   # ── Input validation ─────────────────────────────────────────────────────
   system   <- match.arg(system)
@@ -222,7 +228,8 @@ gg_nullclines <- function(deriv,
         ggplot2::scale_linetype_manual(
           name   = NULL,
           values = nc_linetypes
-        )
+        ),
+        .legend_theme(legend_position)
       )
 
     } else {

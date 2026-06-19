@@ -126,7 +126,7 @@ test_that("gg_manifolds() returns a list", {
 test_that("gg_manifolds() list elements are ggplot2 layers or scales", {
   result <- gg_manifolds(ode_example_08, equilibrium = c(0, 0))
   is_gg  <- vapply(result, function(x) {
-    inherits(x, "Layer") || inherits(x, "Scale") || inherits(x, "ggproto")
+    inherits(x, "Layer") || inherits(x, "Scale") || inherits(x, "ggproto") || inherits(x, "theme")
   }, logical(1L))
   expect_true(all(is_gg))
 })

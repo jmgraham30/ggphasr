@@ -231,3 +231,36 @@ test_that(".eval_ode() works correctly for wrapped Convention B2 functions", {
                                  parameters = NULL)
   expect_equal(result, c(1.0, 0.0))
 })
+
+
+# ===========================================================================
+# .legend_theme()
+# ===========================================================================
+
+test_that(".legend_theme() returns a theme object for standard positions", {
+  for (pos in c("right", "left", "top", "bottom", "none")) {
+    th <- ggphasr:::.legend_theme(pos)
+    expect_s3_class(th, "theme")
+    expect_equal(th$legend.position, pos)
+  }
+})
+
+test_that('.legend_theme("inside") returns a theme with inside position', {
+  th <- ggphasr:::.legend_theme("inside")
+  expect_s3_class(th, "theme")
+  expect_equal(th$legend.position, "inside")
+  expect_true(!is.null(th$legend.position.inside))
+})
+
+test_that(".legend_theme() accepts numeric c(x,y) vector", {
+  th <- ggphasr:::.legend_theme(c(0.9, 0.9))
+  expect_s3_class(th, "theme")
+  expect_equal(th$legend.position, "inside")
+  expect_equal(th$legend.position.inside, c(0.9, 0.9))
+})
+
+test_that(".legend_theme() can be added to a ggplot", {
+  p <- ggplot2::ggplot() + ggphasr:::.legend_theme("none")
+  expect_s3_class(p, "ggplot")
+  expect_no_error(ggplot2::ggplot_build(p))
+})
