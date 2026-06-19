@@ -17,7 +17,7 @@ Description: Provides tools for qualitative analysis of one- and
     manifolds, and to identify and classify equilibrium points. A successor
     to the phaseR package (Grayling, 2014) <doi:10.32614/RJ-2014-023>.
 License: MIT + file LICENSE
-URL: https://github.com/jmgraham30/ggphasr
+URL: https://github.com/jmgraham30/ggphasr, https://jmgraham30.github.io/ggphasr/
 BugReports: https://github.com/jmgraham30/ggphasr/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
