@@ -20,9 +20,7 @@ every plot fully customizable with standard `ggplot2` syntax.
 
 `ggphasr` is a modern successor to the
 [phaseR](https://github.com/mjg211/phaseR) package (Grayling, 2014),
-addressing two limitations of the original: base R graphics are replaced
-with `ggplot2`, and the package is distributed via GitHub rather than
-CRAN.
+where base R graphics are replaced with `ggplot2`.
 
 ## Installation
 
@@ -289,18 +287,18 @@ gg_flow_field(ode_example_11,
 Three vignettes provide detailed tutorials with full mathematical
 exposition:
 
-- **One-Dimensional ODE Systems** — phase lines, equilibria, stability,
-  the logistic and von Bertalanffy growth models
-- **Two-Dimensional ODE Systems** — phase planes, nullclines,
-  trajectories, Lotka-Volterra, SIR, Van der Pol, competition
-- **Equilibrium Analysis** — Jacobian linearization, the
-  trace-determinant plane, manifolds, bifurcation preview
-
-``` r
-vignette("one-dimensional-systems", package = "ggphasr")
-vignette("two-dimensional-systems", package = "ggphasr")
-vignette("equilibrium-analysis",    package = "ggphasr")
-```
+- [**One-Dimensional ODE
+  Systems**](https://jmgraham30.github.io/ggphasr/articles/one-dimensional-systems.html)
+  — phase lines, equilibria, stability, the logistic and von Bertalanffy
+  growth models
+- [**Two-Dimensional ODE
+  Systems**](https://jmgraham30.github.io/ggphasr/articles/two-dimensional-systems.html)
+  — phase planes, nullclines, trajectories, Lotka-Volterra, SIR, Van der
+  Pol, competition
+- [**Equilibrium
+  Analysis**](https://jmgraham30.github.io/ggphasr/articles/equilibrium-analysis.html)
+  — Jacobian linearization, the trace-determinant plane, manifolds,
+  bifurcation preview
 
 ## Citation
 
