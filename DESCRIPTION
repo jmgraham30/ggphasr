@@ -32,6 +32,7 @@ Suggests:
     ggforce,
     knitr,
     metR,
+    patchwork,
     pkgdown,
     rmarkdown,
     scales,
